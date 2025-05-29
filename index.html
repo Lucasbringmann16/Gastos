@@ -1,0 +1,1289 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+</script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos v1.3</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#28a745">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/50/000000/money-bag.png">
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous">
+    <style>
+        :root {
+            --background-color: #f5f7fa;
+            --container-background: #ffffff;
+            --text-color: #2d3436;
+            --border-color: #e0e0e0;
+            --table-header-bg: #f8f9fa;
+            --button-add-bg: #28a745;
+            --button-add-hover: #218838;
+            --button-cancel-bg: #6c757d;
+            --button-cancel-hover: #5a6268;
+            --button-delete-bg: #dc3545;
+            --button-delete-hover: #c82333;
+            --button-edit-bg: #007bff;
+            --button-edit-hover: #0056b3;
+            --total-bg: #e7f3ff;
+            --total-color: #007bff;
+            --remaining-bg: #e6ffed;
+            --remaining-color: #28a745;
+            --remaining-negative-bg: #ffe6e6;
+            --remaining-negative-color: #dc3545;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --container-background: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --table-header-bg: #2c2c2c;
+            --button-add-bg: #2ecc71;
+            --button-add-hover: #27ae60;
+            --button-cancel-bg: #95a5a6;
+            --button-cancel-hover: #7f8c8d;
+            --button-delete-bg: #e74c3c;
+            --button-delete-hover: #c0392b;
+            --button-edit-bg: #3498db;
+            --button-edit-hover: #2980b9;
+            --total-bg: #1a2634;
+            --total-color: #66b0ff;
+            --remaining-bg: #1a2e24;
+            --remaining-color: #2ecc71;
+            --remaining-negative-bg: #2e1a1a;
+            --remaining-negative-color: #e74c3c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --card-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--container-background);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        .header h1 i {
+            color: var(--button-add-bg);
+        }
+        .menu-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: var(--transition);
+        }
+        .menu-button i {
+            font-size: 24px;
+            color: var(--text-color);
+        }
+        .menu-button:hover i {
+            color: var(--button-add-bg);
+        }
+        .settings-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--container-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        .settings-menu.active {
+            display: block;
+        }
+        .settings-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .settings-menu li {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-color);
+            font-size: 0.95em;
+        }
+        .settings-menu li i {
+            margin-right: 8px;
+            color: var(--button-add-bg);
+        }
+        .settings-menu input[type="number"] {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+        }
+        .month-selector {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .month-selector label {
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .month-selector select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            transition: var(--transition);
+        }
+        .month-selector select:focus {
+            outline: none;
+            border-color: var(--button-add-bg);
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+        }
+        .privacy-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: var(--transition);
+        }
+        .privacy-button i {
+            font-size: 18px;
+            color: var(--text-color);
+        }
+        .privacy-button:hover i {
+            color: var(--button-add-bg);
+        }
+        .input-section {
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            background: var(--container-background);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .input-section .recurring-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+        .type-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .type-selector label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+        .salary-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .salary-section .salary-value {
+            color: var(--remaining-color);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .input-section input, .input-section button,
+        .salary-section input, .salary-section button {
+            padding: 6px 12px;
+            margin: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            transition: var(--transition);
+        }
+        .input-section input:focus, .salary-section input:focus {
+            outline: none;
+            border-color: var(--button-add-bg);
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+        }
+        .input-section button,
+        .salary-section button {
+            background: linear-gradient(135deg, var(--button-add-bg), var(--button-add-hover));
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-section button:hover,
+        .salary-section button:hover {
+            background: var(--button-add-hover);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        .input-section .cancel-btn {
+            background: linear-gradient(135deg, var(--button-cancel-bg), var(--button-cancel-hover));
+        }
+        .input-section .cancel-btn:hover {
+            background: var(--button-cancel-hover);
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+        table {
+            width: calc(100% - 30px); /* 100% menos as margens laterais */
+            margin: 0 15px; /* Margens laterais para alinhar com outros elementos */
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: var(--container-background);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        table, th, td {
+            border: none;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+        th {
+            background-color: var(--table-header-bg);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+        tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        tr:last-child {
+            border-bottom: none;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        tr:nth-child(even)[data-theme="dark"] {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        tr:hover {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        .delete-btn {
+            background: linear-gradient(135deg, var(--button-delete-bg), var(--button-delete-hover));
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 6px;
+            transition: var(--transition);
+        }
+        .delete-btn:hover {
+            background: var(--button-delete-hover);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        .edit-btn {
+            background: linear-gradient(135deg, var(--button-edit-bg), var(--button-edit-hover));
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .edit-btn:hover {
+            background: var(--button-edit-hover);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        .recurring-icon {
+            color: var(--button-add-bg);
+            margin-left: 5px;
+        }
+        .paid-icon {
+            color: var(--button-add-bg);
+            margin-right: 5px;
+        }
+        .total, .remaining {
+            font-size: 1.1em;
+            font-weight: 500;
+            text-align: right;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .total {
+            background-color: var(--total-bg);
+            color: var(--total-color);
+        }
+        .remaining {
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
+        .remaining.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
+        .to-pay {
+            font-size: 1.1em;
+            font-weight: 500;
+            text-align: right;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-left: 15px;
+            margin-right: 15px;
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
+
+        .to-pay.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
+        .chart-container {
+            background: var(--container-background);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-top: 25px;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        canvas {
+            max-width: 100%;
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        tr {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Media Queries para Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px; /* Reduzido para telas menores */
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .menu-button {
+                align-self: flex-end;
+                padding: 6px;
+            }
+            .menu-button i {
+                font-size: 20px;
+            }
+            .settings-menu {
+                top: 80px;
+                right: 15px;
+                min-width: 180px;
+            }
+            .settings-menu li {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            .month-selector {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .month-selector select,
+            .input-section input, .input-section button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .type-selector {
+                gap: 10px;
+            }
+            .type-selector label {
+                font-size: 0.85em;
+            }
+            .input-section {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .settings-menu input[type="number"],
+            .salary-section input,
+            .salary-section button {
+                padding: 4px 8px;
+                font-size: 0.9em;
+            }
+            .salary-section input {
+                width: 80px;
+            }
+            table {
+                width: calc(100% - 20px); /* Ajustado para margens menores */
+                margin: 0 10px; /* Margens ajustadas */
+            }
+            th, td {
+                padding: 10px 12px;
+                font-size: 0.85em;
+            }
+            .total, .remaining, .to-pay {
+                font-size: 1em;
+                padding: 8px 12px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .chart-container {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 8px; /* Reduzido ainda mais para telas muito pequenas */
+            }
+            .header {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .header h1 {
+                font-size: 1.3em;
+            }
+            .menu-button {
+                padding: 5px;
+            }
+            .menu-button i {
+                font-size: 18px;
+            }
+            .settings-menu {
+                top: 70px;
+                right: 10px;
+                min-width: 160px;
+            }
+            .settings-menu li {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+            .month-selector {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .month-selector select,
+            .input-section input, .input-section button {
+                padding: 6px 10px;
+                font-size: 0.85em;
+            }
+            .type-selector {
+                gap: 8px;
+            }
+            .type-selector label {
+                font-size: 0.8em;
+            }
+            .input-section {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .settings-menu input[type="number"],
+            .salary-section input,
+            .salary-section button {
+                padding: 3px 6px;
+                font-size: 0.85em;
+            }
+            .salary-section input {
+                width: 70px;
+            }
+            table {
+                width: calc(100% - 16px); /* Ajustado para margens menores */
+                margin: 0 8px; /* Margens ajustadas */
+            }
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.8em;
+            }
+            .total, .remaining, .to-pay {
+                font-size: 0.95em;
+                padding: 6px 10px;
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .chart-container {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-wallet"></i> Controle de Gastos v1.3</h1>
+            <button class="menu-button" onclick="toggleSettingsMenu()">
+                <i class="fas fa-gear"></i>
+            </button>
+        </div>
+        <div class="settings-menu" id="settingsMenu">
+            <ul>
+                <li>
+                    <span><i class="fas fa-moon"></i> Modo Escuro</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle" onchange="toggleTheme()">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li>
+                    <span><i class="fas fa-calendar-day"></i> Dia de Pagamento</span>
+                    <input type="number" id="paymentDay" min="1" max="31" value="1" onchange="setPaymentDay()">
+                </li>
+                <li>
+                    <span><i class="fas fa-money-bill-wave"></i> Definir Salário</span>
+                    <div class="salary-section">
+                        <input type="number" id="salaryAmount" placeholder="R$" step="0.01">
+                        <button onclick="setSalary()"><i class="fas fa-check"></i></button>
+                        <span id="currentSalary" class="salary-value"></span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="month-selector">
+            <label for="monthSelect">Selecione o Mês:</label>
+            <select id="monthSelect" onchange="changeMonth()">
+                <option value="Janeiro">Janeiro</option>
+                <option value="Fevereiro">Fevereiro</option>
+                <option value="Março">Março</option>
+                <option value="Abril">Abril</option>
+                <option value="Maio">Maio</option>
+                <option value="Junho">Junho</option>
+                <option value="Julho">Julho</option>
+                <option value="Agosto">Agosto</option>
+                <option value="Setembro">Setembro</option>
+                <option value="Outubro">Outubro</option>
+                <option value="Novembro">Novembro</option>
+                <option value="Dezembro">Dezembro</option>
+            </select>
+            <button id="privacyToggle" class="privacy-button" onclick="togglePrivacyMode()">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+        <div class="input-section">
+            <input type="text" id="entryName" placeholder="Nome">
+            <input type="number" id="entryAmount" placeholder="Valor (R$)" step="0.01">
+            <input type="date" id="entryDate" required>
+            <div class="type-selector">
+                <label>
+                    <input type="radio" name="entryType" value="expense" checked>
+                    Gasto
+                </label>
+                <label>
+                    <input type="radio" name="entryType" value="income">
+                    Renda
+                </label>
+            </div>
+            <label class="recurring-label" id="recurringOption">
+                <input type="checkbox" id="isRecurring">
+                Recorrente
+            </label>
+            <button id="addBtn" onclick="addOrUpdateEntry()"><i class="fas fa-plus"></i> Adicionar</button>
+            <button id="cancelBtn" class="cancel-btn" onclick="cancelEdit()" style="display: none;"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+        <table id="entryTable">
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Valor (R$)</th>
+                    <th>Data de Pagamento</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="entryTableBody"></tbody>
+        </table>
+        <div class="total" id="totalAmount">Total de Gastos: R$ 0,00</div>
+        <div class="remaining" id="remainingAmount">Restante: R$ 0,00</div>
+        <div class="to-pay" id="toPayAmount">A pagar: R$ 0,00</div>
+        <div class="chart-container">
+            <canvas id="entryChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        // Lista de meses para facilitar o acesso
+        const months = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        // Carregar dados do localStorage ou iniciar com objeto vazio
+        let monthlyData = JSON.parse(localStorage.getItem('monthlyData')) || {};
+        let currentMonth = getCurrentMonth();
+        let entries = [];
+        let salary = 0;
+        let chart;
+        let editingIndex = null;
+        let isPrivacyMode = localStorage.getItem('privacyMode') === 'true' || false;
+
+        // Função para obter o mês atual ou próximo com base no dia de pagamento
+        function getCurrentMonth() {
+            const today = new Date();
+            const currentDay = today.getDate();
+            const currentMonthIndex = today.getMonth();
+            const paymentDay = parseInt(localStorage.getItem('paymentDay')) || 1;
+
+            // Se o dia atual for maior que o dia de pagamento, abrir no próximo mês
+            if (currentDay > paymentDay && currentMonthIndex < 11) {
+                return months[currentMonthIndex + 1];
+            }
+            return months[currentMonthIndex];
+        }
+
+        // Inicializar dados para todos os meses, se não existirem
+        function initializeMonthlyData() {
+            months.forEach(month => {
+                if (!monthlyData[month]) {
+                    monthlyData[month] = { entries: [], salary: 0 };
+                } else if (monthlyData[month].expenses) {
+                    // Migrar dados antigos e adicionar isPaid
+                    monthlyData[month].entries = monthlyData[month].expenses.map(expense => ({
+                        ...expense,
+                        type: 'expense',
+                        isPaid: false
+                    }));
+                    delete monthlyData[month].expenses;
+                }
+            });
+            saveMonthlyData();
+        }
+
+        // Salvar dados no localStorage
+        function saveMonthlyData() {
+            localStorage.setItem('monthlyData', JSON.stringify(monthlyData));
+        }
+
+        // Carregar dados do mês selecionado
+        function loadMonthData() {
+            const month = document.getElementById('monthSelect').value;
+            currentMonth = month;
+            entries = monthlyData[month].entries || [];
+            salary = monthlyData[month].salary || 0;
+            updateTable();
+            updateSalaryDisplay();
+            updateRemaining();
+            updateChart();
+            updateToPay();
+        }
+
+        // Definir o mês atual ou próximo como padrão no <select>
+        function setDefaultMonth() {
+            const monthSelect = document.getElementById('monthSelect');
+            monthSelect.value = currentMonth;
+        }
+
+        // Registrar o Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso:', registration);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao registrar o Service Worker:', error);
+                    });
+            });
+        }
+
+        // Gerenciar menu de configurações
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Gerenciar tema
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('darkModeToggle').checked = !isDark;
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            updateChart();
+        }
+
+        // Carregar tema salvo
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
+        }
+
+        // Definir e salvar o dia de pagamento
+        function setPaymentDay() {
+            const paymentDayInput = document.getElementById('paymentDay');
+            let paymentDay = parseInt(paymentDayInput.value);
+            if (isNaN(paymentDay) || paymentDay < 1 || paymentDay > 31) {
+                paymentDay = 1;
+                paymentDayInput.value = paymentDay;
+            }
+            localStorage.setItem('paymentDay', paymentDay);
+            // Atualizar o mês exibido com base no novo dia de pagamento
+            currentMonth = getCurrentMonth();
+            setDefaultMonth();
+            loadMonthData();
+        }
+
+        // Carregar o dia de pagamento salvo
+        function loadPaymentDay() {
+            const paymentDay = localStorage.getItem('paymentDay') || 1;
+            document.getElementById('paymentDay').value = paymentDay;
+        }
+
+        function formatCurrency(value) {
+            return `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
+        }
+
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function setSalary() {
+            const salaryInput = document.getElementById('salaryAmount');
+            const salaryValue = parseFloat(salaryInput.value);
+
+            if (!isNaN(salaryValue) && salaryValue >= 0) {
+                const currentMonthIndex = getMonthIndex(currentMonth);
+
+                // Definir o salário do mês atual em diante
+                for (let i = currentMonthIndex; i < months.length; i++) {
+                    const targetMonth = months[i];
+                    monthlyData[targetMonth].salary = salaryValue;
+                }
+
+                salary = salaryValue;
+                saveMonthlyData();
+                salaryInput.value = '';
+                updateSalaryDisplay();
+                updateRemaining();
+            } else {
+                alert('Por favor, insira um valor de salário válido (positivo ou zero).');
+            }
+        }
+
+        function updateSalaryDisplay() {
+            const salaryElement = document.getElementById('currentSalary');
+            salaryElement.textContent = salary > 0 && !isPrivacyMode ? formatCurrency(salary) : '';
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById('entryTableBody');
+            tableBody.innerHTML = '';
+            entries.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const valueColor = entry.type === 'income' ? 'var(--remaining-color)' : 'var(--remaining-negative-color)';
+                const displayValue = isPrivacyMode ? '****' : formatCurrency(entry.amount);
+                const paidIcon = entry.isPaid ? '<i class="fas fa-check paid-icon"></i>' : '';
+                row.innerHTML = `
+                    <td style="cursor: pointer;" onclick="togglePaid(${index})">${paidIcon} ${entry.name}${entry.isRecurring ? ' <i class="fas fa-redo-alt recurring-icon"></i>' : ''}</td>
+                    <td style="color: ${valueColor}">${displayValue}</td>
+                    <td>${formatDate(entry.date)}</td>
+                    <td>
+                        <button class="edit-btn" data-index="${index}"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Excluir</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateTotal() {
+            const totalExpenses = entries
+                .filter(entry => entry.type === 'expense')
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            document.getElementById('totalAmount').textContent = `Total de Gastos: ${formatCurrency(totalExpenses)}`;
+            return totalExpenses;
+        }
+
+        function updateRemaining() {
+            const totalExpenses = updateTotal();
+            const totalIncome = entries
+                .filter(entry => entry.type === 'income')
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0, 0);
+            const totalBudget = salary + totalIncome;
+            const remaining = totalBudget - totalExpenses;
+            const remainingElement = document.getElementById('remainingAmount');
+            if (isPrivacyMode) {
+                remainingElement.textContent = 'Restante: ****';
+                remainingElement.classList.remove('negative');
+            } else {
+                remainingElement.textContent = `Restante: ${formatCurrency(remaining)}`;
+                remainingElement.classList.toggle('negative', remaining < 0);
+            }
+        }
+
+        function updateToPay() {
+            const totalExpenses = entries
+                .filter(entry => entry.type === 'expense' && !entry.isPaid)
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            const toPayElement = document.getElementById('toPayAmount');
+            toPayElement.textContent = `A pagar: ${formatCurrency(totalExpenses)}`;
+            toPayElement.classList.toggle('negative', totalExpenses > 0);
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('entryChart').getContext('2d');
+            const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+
+            if (isPrivacyMode) {
+                if (chart) chart.destroy();
+                ctx.canvas.style.display = 'none';
+                return;
+            }
+
+            ctx.canvas.style.display = 'block';
+            
+            // Calcular o total de gastos
+            const totalExpenses = entries
+                .filter(entry => entry.type === 'expense')
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            // Calcular o total de rendas
+            const totalIncome = entries
+                .filter(entry => entry.type === 'income')
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            // Obter o salário do mês atual
+            const currentSalary = monthlyData[currentMonth].salary || 0;
+            
+            // Calcular o valor restante para o gráfico, incluindo rendas (evitar valores negativos)
+            const totalBudget = currentSalary + totalIncome;
+            const remainingForChart = totalBudget > 0 ? Math.max(totalBudget - totalExpenses, 0) : 0;
+            
+            // Preparar os dados para o gráfico
+            const expenseLabels = entries.filter(entry => entry.type === 'expense').map(entry => entry.name);
+            const expenseData = entries.filter(entry => entry.type === 'expense').map(entry => entry.amount);
+            
+            // Adicionar a fatia "Restante + Rendas" se o orçamento total (salário + rendas) for maior que 0
+            const labels = [...expenseLabels];
+            const data = [...expenseData];
+            const hasRemaining = totalBudget > 0 && remainingForChart > 0;
+            if (hasRemaining) {
+                labels.push('Restante + Rendas');
+                data.push(remainingForChart);
+            }
+            
+            // Definir as cores para os gastos
+            const expenseColors = isDarkTheme
+                ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB300', '#CE93D8']
+                : ['#66BB6A', '#42A5F5', '#EF5350', '#90A4AE', '#FFCA28', '#AB47BC'];
+            
+            // Definir a cor fixa para "Restante + Rendas" (usar hexadecimal base)
+            const remainingBaseColor = isDarkTheme ? '#808080' : '#D3D3D3';
+            
+            // Criar array de cores com opacidade específica para "Restante + Rendas"
+            const backgroundColors = expenseData.map((_, index) => expenseColors[index % expenseColors.length]);
+            if (hasRemaining) {
+                backgroundColors.push(remainingBaseColor);
+            }
+
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors.map((color, index) => {
+                            if (hasRemaining && index === backgroundColors.length - 1) {
+                                const r = parseInt(color.slice(1, 3), 16);
+                                const g = parseInt(color.slice(3, 5), 16);
+                                const b = parseInt(color.slice(5, 7), 16);
+                                return `rgba(${r}, ${g}, ${b}, 0.3)`;
+                            }
+                            return color;
+                        }),
+                        borderColor: isDarkTheme ? '#1e1e1e' : '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: isDarkTheme ? '#e0e0e0' : '#2d3436',
+                                font: {
+                                    family: 'Poppins',
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getMonthIndex(monthName) {
+            return months.indexOf(monthName);
+        }
+
+        function getLastDayOfMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function addRecurringEntries(entry, startMonthIndex) {
+            const [year, month, day] = entry.date.split('-');
+            const parsedYear = parseInt(year);
+            const parsedDay = parseInt(day);
+
+            for (let i = startMonthIndex; i < months.length; i++) {
+                const targetMonth = months[i];
+                const lastDay = getLastDayOfMonth(parsedYear, i);
+                const targetDay = Math.min(parsedDay, lastDay);
+                const targetDate = `${parsedYear}-${String(i + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+
+                const newEntry = {
+                    name: entry.name,
+                    amount: entry.amount,
+                    date: targetDate,
+                    isRecurring: true,
+                    type: entry.type,
+                    isPaid: entry.isPaid
+                };
+
+                if (i === startMonthIndex && editingIndex !== null) {
+                    monthlyData[targetMonth].entries[editingIndex] = newEntry;
+                } else {
+                    monthlyData[targetMonth].entries.push(newEntry);
+                }
+            }
+            saveMonthlyData();
+        }
+
+        function removeRecurringEntries(entry, startMonthIndex, removeAll = false) {
+            const [year] = entry.date.split('-');
+            const parsedYear = parseInt(year);
+            const entryName = entry.name;
+            const entryAmount = entry.amount;
+            const entryType = entry.type;
+
+            for (let i = startMonthIndex; i < months.length; i++) {
+                const targetMonth = months[i];
+                const entriesInMonth = monthlyData[targetMonth].entries;
+                monthlyData[targetMonth].entries = entriesInMonth.filter(ent => {
+                    const [entYear] = ent.date.split('-');
+                    const isSameEntry = ent.name === entryName && ent.amount === entryAmount && ent.isRecurring && ent.type === entryType;
+                    if (!isSameEntry) return true;
+                    if (removeAll) return false;
+                    return i !== startMonthIndex; // Remove apenas no mês atual
+                });
+            }
+            saveMonthlyData();
+        }
+
+        function toggleRecurringOption() {
+            const recurringOption = document.getElementById('recurringOption');
+            recurringOption.style.display = 'block';
+        }
+
+        function addOrUpdateEntry() {
+            const nameInput = document.getElementById('entryName');
+            const amountInput = document.getElementById('entryAmount');
+            const dateInput = document.getElementById('entryDate');
+            const type = document.querySelector('input[name="entryType"]:checked').value;
+            const isRecurringInput = document.getElementById('isRecurring');
+            const name = nameInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            const date = dateInput.value;
+            const isRecurring = isRecurringInput.checked;
+
+            if (name && !isNaN(amount) && amount > 0 && date) {
+                const [year, month] = date.split('-');
+                const entryMonth = months[parseInt(month) - 1];
+                const startMonthIndex = getMonthIndex(entryMonth);
+
+                const newEntry = { name, amount, date, isRecurring, type, isPaid: false };
+
+                if (editingIndex !== null) {
+                    const oldEntry = entries[editingIndex];
+                    if (oldEntry.isRecurring) {
+                        removeRecurringEntries(oldEntry, getMonthIndex(currentMonth));
+                    }
+                    entries[editingIndex] = newEntry;
+                    monthlyData[currentMonth].entries = entries;
+                } else if (!isRecurring) {
+                    // Adicionar apenas se não for recorrente
+                    monthlyData[entryMonth].entries.push(newEntry);
+                }
+
+                if (isRecurring) {
+                    addRecurringEntries(newEntry, startMonthIndex);
+                }
+
+                nameInput.value = '';
+                amountInput.value = '';
+                dateInput.value = '';
+                isRecurringInput.checked = false;
+                document.querySelector('input[name="entryType"][value="expense"]').checked = true;
+                toggleRecurringOption();
+                if (editingIndex !== null) {
+                    document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+                    document.getElementById('cancelBtn').style.display = 'none';
+                    editingIndex = null;
+                }
+                saveMonthlyData();
+                loadMonthData();
+            } else {
+                alert('Por favor, preencha todos os campos corretamente: nome, valor positivo e data.');
+            }
+        }
+
+        function editEntry(index) {
+            const entry = entries[index];
+            document.getElementById('entryName').value = entry.name;
+            document.getElementById('entryAmount').value = entry.amount.toFixed(2);
+            document.getElementById('entryDate').value = entry.date;
+            document.getElementById('isRecurring').checked = entry.isRecurring;
+            document.querySelector(`input[name="entryType"][value="${entry.type}"]`).checked = true;
+            toggleRecurringOption();
+            document.getElementById('addBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+            document.getElementById('cancelBtn').style.display = 'inline';
+            editingIndex = index;
+        }
+
+        function cancelEdit() {
+            document.getElementById('entryName').value = '';
+            document.getElementById('entryAmount').value = '';
+            document.getElementById('entryDate').value = '';
+            document.getElementById('isRecurring').checked = false;
+            document.querySelector('input[name="entryType"][value="expense"]').checked = true;
+            toggleRecurringOption();
+            document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+            document.getElementById('cancelBtn').style.display = 'none';
+            editingIndex = null;
+        }
+
+        function deleteEntry(index) {
+            const entry = entries[index];
+            let confirmMessage = `Tem certeza que deseja excluir esta ${entry.type === 'expense' ? 'gasto' : 'renda'}?`;
+            let removeAll = false;
+
+            if (entry.isRecurring) {
+                const choice = confirm(`Esta é uma ${entry.type === 'expense' ? 'gasto' : 'renda'} recorrente. Deseja excluir apenas neste mês ou em todos os meses futuros?\n\n- OK: Excluir apenas neste mês\n- Cancelar: Excluir em todos os meses futuros`);
+                removeAll = !choice;
+                confirmMessage = removeAll ? `Excluir esta ${entry.type === 'expense' ? 'gasto' : 'renda'} em todos os meses futuros?` : `Excluir esta ${entry.type === 'expense' ? 'gasto' : 'renda'} apenas neste mês?`;
+            }
+
+            if (confirm(confirmMessage)) {
+                if (entry.isRecurring) {
+                    const startMonthIndex = getMonthIndex(currentMonth);
+                    removeRecurringEntries(entry, startMonthIndex, removeAll);
+                } else {
+                    entries.splice(index, 1);
+                    monthlyData[currentMonth].entries = entries;
+                    saveMonthlyData();
+                }
+                loadMonthData();
+            }
+        }
+
+        function changeMonth() {
+            loadMonthData();
+        }
+
+        function togglePrivacyMode() {
+            isPrivacyMode = !isPrivacyMode;
+            localStorage.setItem('privacyMode', isPrivacyMode);
+            const icon = document.getElementById('privacyToggle').querySelector('i');
+            icon.classList.toggle('fa-eye', !isPrivacyMode);
+            icon.classList.toggle('fa-eye-slash', isPrivacyMode);
+            loadMonthData();
+        }
+
+        function togglePaid(index) {
+            entries[index].isPaid = !entries[index].isPaid;
+            monthlyData[currentMonth].entries = entries;
+            saveMonthlyData();
+            updateTable();
+            updateToPay();
+        }
+
+        // Configurar delegação de eventos
+        document.getElementById('entryTable').addEventListener('click', (event) => {
+            const index = parseInt(event.target.getAttribute('data-index') || event.target.parentElement.getAttribute('data-index'));
+            if (!isNaN(index)) {
+                if (event.target.classList.contains('edit-btn') || event.target.parentElement.classList.contains('edit-btn')) {
+                    editEntry(index);
+                } else if (event.target.classList.contains('delete-btn') || event.target.parentElement.classList.contains('delete-btn')) {
+                    deleteEntry(index);
+                }
+            }
+        });
+
+        // Fechar menu ao clicar fora
+        document.addEventListener('click', (event) => {
+            const menu = document.getElementById('settingsMenu');
+            const menuButton = document.querySelector('.menu-button');
+            if (!menu.contains(event.target) && !menuButton.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Controlar visibilidade do checkbox "Recorrente"
+        document.querySelectorAll('input[name="entryType"]').forEach(radio => {
+            radio.addEventListener('change', toggleRecurringOption);
+        });
+
+        // Inicializar a página
+        initializeMonthlyData();
+        setDefaultMonth();
+        loadTheme();
+        loadPaymentDay();
+        toggleRecurringOption();
+        const privacyIcon = document.getElementById('privacyToggle').querySelector('i');
+        privacyIcon.classList.toggle('fa-eye', !isPrivacyMode);
+        privacyIcon.classList.toggle('fa-eye-slash', isPrivacyMode);
+        loadMonthData();
+        updateToPay();
+    </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9387dbbc3f364520',t:'MTc0NjAyNDY5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
