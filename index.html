@@ -37,47 +37,7 @@
         }
         return gk_fileData[filename] || "";
         }
-        </script><script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-</script>
-<!DOCTYPE html>
+        </script><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -747,20 +707,20 @@
         ];
 
         // Carregar dados do localStorage ou iniciar com objeto vazio
-        let monthlyData = JSON.parse(localStorage.getItem('monthlyData')) || {};
+        let monthlyData = JSON.parse(localStorage.getItem('app2_monthlyData')) || {};
         let currentMonth = getCurrentMonth();
         let entries = [];
         let salary = 0;
         let chart;
         let editingIndex = null;
-        let isPrivacyMode = localStorage.getItem('privacyMode') === 'true' || false;
+        let isPrivacyMode = localStorage.getItem('app2_privacyMode') === 'true' || false;
 
         // Função para obter o mês atual ou próximo com base no dia de pagamento
         function getCurrentMonth() {
             const today = new Date();
             const currentDay = today.getDate();
             const currentMonthIndex = today.getMonth();
-            const paymentDay = parseInt(localStorage.getItem('paymentDay')) || 1;
+            const paymentDay = parseInt(localStorage.getItem('app2_paymentDay')) || 1;
 
             // Se o dia atual for maior que o dia de pagamento, abrir no próximo mês
             if (currentDay > paymentDay && currentMonthIndex < 11) {
@@ -789,11 +749,12 @@
 
         // Salvar dados no localStorage
         function saveMonthlyData() {
-            localStorage.setItem('monthlyData', JSON.stringify(monthlyData));
+            localStorage.setItem('app2_monthlyData', JSON.stringify(monthlyData));
         }
 
         // Carregar dados do mês selecionado
         function loadMonthData() {
+            initializeMonthlyData(); // Garantir que os dados sejam inicializados
             const month = document.getElementById('monthSelect').value;
             currentMonth = month;
             entries = monthlyData[month].entries || [];
@@ -827,7 +788,9 @@
         // Gerenciar menu de configurações
         function toggleSettingsMenu() {
             const menu = document.getElementById('settingsMenu');
-            menu.classList.toggle('active');
+            if (menu) {
+                menu.classList.toggle('active');
+            }
         }
 
         // Gerenciar tema
@@ -836,13 +799,13 @@
             const isDark = body.getAttribute('data-theme') === 'dark';
             body.setAttribute('data-theme', isDark ? 'light' : 'dark');
             document.getElementById('darkModeToggle').checked = !isDark;
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('app2_theme', isDark ? 'light' : 'dark');
             updateChart();
         }
 
         // Carregar tema salvo
         function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedTheme = localStorage.getItem('app2_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
         }
@@ -855,7 +818,7 @@
                 paymentDay = 1;
                 paymentDayInput.value = paymentDay;
             }
-            localStorage.setItem('paymentDay', paymentDay);
+            localStorage.setItem('app2_paymentDay', paymentDay);
             // Atualizar o mês exibido com base no novo dia de pagamento
             currentMonth = getCurrentMonth();
             setDefaultMonth();
@@ -864,7 +827,7 @@
 
         // Carregar o dia de pagamento salvo
         function loadPaymentDay() {
-            const paymentDay = localStorage.getItem('paymentDay') || 1;
+            const paymentDay = localStorage.getItem('app2_paymentDay') || 1;
             document.getElementById('paymentDay').value = paymentDay;
         }
 
@@ -1231,7 +1194,7 @@
 
         function togglePrivacyMode() {
             isPrivacyMode = !isPrivacyMode;
-            localStorage.setItem('privacyMode', isPrivacyMode);
+            localStorage.setItem('app2_privacyMode', isPrivacyMode);
             const icon = document.getElementById('privacyToggle').querySelector('i');
             icon.classList.toggle('fa-eye', !isPrivacyMode);
             icon.classList.toggle('fa-eye-slash', isPrivacyMode);
@@ -1246,25 +1209,27 @@
             updateToPay();
         }
 
-        // Configurar delegação de eventos
-        document.getElementById('entryTable').addEventListener('click', (event) => {
-            const index = parseInt(event.target.getAttribute('data-index') || event.target.parentElement.getAttribute('data-index'));
-            if (!isNaN(index)) {
-                if (event.target.classList.contains('edit-btn') || event.target.parentElement.classList.contains('edit-btn')) {
-                    editEntry(index);
-                } else if (event.target.classList.contains('delete-btn') || event.target.parentElement.classList.contains('delete-btn')) {
-                    deleteEntry(index);
+        // Configurar delegação de eventos após o carregamento do DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('entryTable').addEventListener('click', (event) => {
+                const index = parseInt(event.target.getAttribute('data-index') || event.target.parentElement.getAttribute('data-index'));
+                if (!isNaN(index)) {
+                    if (event.target.classList.contains('edit-btn') || event.target.parentElement.classList.contains('edit-btn')) {
+                        editEntry(index);
+                    } else if (event.target.classList.contains('delete-btn') || event.target.parentElement.classList.contains('delete-btn')) {
+                        deleteEntry(index);
+                    }
                 }
-            }
-        });
+            });
 
-        // Fechar menu ao clicar fora
-        document.addEventListener('click', (event) => {
-            const menu = document.getElementById('settingsMenu');
-            const menuButton = document.querySelector('.menu-button');
-            if (!menu.contains(event.target) && !menuButton.contains(event.target)) {
-                menu.classList.remove('active');
-            }
+            // Fechar menu ao clicar fora
+            document.addEventListener('click', (event) => {
+                const menu = document.getElementById('settingsMenu');
+                const menuButton = document.querySelector('.menu-button');
+                if (menu && menuButton && !menu.contains(event.target) && !menuButton.contains(event.target)) {
+                    menu.classList.remove('active');
+                }
+            });
         });
 
         // Controlar visibilidade do checkbox "Recorrente"
