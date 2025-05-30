@@ -37,46 +37,566 @@
         }
         return gk_fileData[filename] || "";
         }
-        </script><script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos v1.3</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#28a745">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/50/000000/money-bag.png">
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous">
+    <style>
+        :root {
+            --background-color: #f5f7fa;
+            --container-background: #ffffff;
+            --text-color: #2d3436;
+            --border-color: #e0e0e0;
+            --table-header-bg: #f8f9fa;
+            --button-add-bg: #28a745;
+            --button-add-hover: #218838;
+            --button-cancel-bg: #6c757d;
+            --button-cancel-hover: #5a6268;
+            --button-delete-bg: #dc3545;
+            --button-delete-hover: #c82333;
+            --button-edit-bg: #007bff;
+            --button-edit-hover: #0056b3;
+            --total-bg: #e7f3ff;
+            --total-color: #007bff;
+            --remaining-bg: #e6ffed;
+            --remaining-color: #28a745;
+            --remaining-negative-bg: #ffe6e6;
+            --remaining-negative-color: #dc3545;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
         }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
 
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --container-background: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --table-header-bg: #2c2c2c;
+            --button-add-bg: #2ecc71;
+            --button-add-hover: #27ae60;
+            --button-cancel-bg: #95a5a6;
+            --button-cancel-hover: #7f8c8d;
+            --button-delete-bg: #e74c3c;
+            --button-delete-hover: #c0392b;
+            --button-edit-bg: #3498db;
+            --button-edit-hover: #2980b9;
+            --total-bg: #1a2634;
+            --total-color: #66b0ff;
+            --remaining-bg: #1a2e24;
+            --remaining-color: #2ecc71;
+            --remaining-negative-bg: #2e1a1a;
+            --remaining-negative-color: #e74c3c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --card-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+        }
 
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--container-background);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        .header h1 i {
+            color: var(--button-add-bg);
+        }
+        .menu-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: var(--transition);
+        }
+        .menu-button i {
+            font-size: 24px;
+            color: var(--text-color);
+        }
+        .menu-button:hover i {
+            color: var(--button-add-bg);
+        }
+        .settings-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--container-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        .settings-menu.active {
+            display: block;
+        }
+        .settings-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .settings-menu li {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-color);
+            font-size: 0.95em;
+        }
+        .settings-menu li i {
+            margin-right: 8px;
+            color: var(--button-add-bg);
+        }
+        .settings-menu input[type="number"] {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+        }
+        .month-selector {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .month-selector label {
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .month-selector select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            transition: var(--transition);
+        }
+        .month-selector select:focus {
+            outline: none;
+            border-color: var(--button-add-bg);
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+        }
+        .privacy-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: var(--transition);
+        }
+        .privacy-button i {
+            font-size: 18px;
+            color: var(--text-color);
+        }
+        .privacy-button:hover i {
+            color: var(--button-add-bg);
+        }
+        .input-section {
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            background: var(--container-background);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .input-section .recurring-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+        .type-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .type-selector label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+        .salary-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .salary-section .salary-value {
+            color: var(--remaining-color);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .input-section input, .input-section button,
+        .salary-section input, .salary-section button {
+            padding: 6px 12px;
+            margin: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--container-background);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            transition: var(--transition);
+        }
+        .input-section input:focus, .salary-section input:focus {
+            outline: none;
+            border-color: var(--button-add-bg);
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+        }
+        .input-section button,
+        .salary-section button {
+            background: linear-gradient(135deg, var(--button-add-bg), var(--button-add-hover));
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-section button:hover,
+        .salary-section button:hover {
+            background: var(--button-add-hover);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        .input-section .cancel-btn {
+            background: linear-gradient(135deg, var(--button-cancel-bg), var(--button-cancel-hover));
+        }
+        .input-section .cancel-btn:hover {
+            background: var(--button-cancel-hover);
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+        table {
+            width: calc(100% - 30px); /* 100% menos as margens laterais */
+            margin: 0 15px; /* Margens laterais para alinhar com outros elementos */
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: var(--container-background);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        table, th, td {
+            border: none;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+        th {
+            background-color: var(--table-header-bg);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+        tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        tr:last-child {
+            border-bottom: none;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        tr:nth-child(even)[data-theme="dark"] {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        tr:hover {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        .delete-btn {
+            background: linear-gradient(135deg, var(--button-delete-bg), var(--button-delete-hover));
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 6px;
+            transition: var(--transition);
+        }
+        .delete-btn:hover {
+            background: var(--button-delete-hover);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        .edit-btn {
+            background: linear-gradient(135deg, var(--button-edit-bg), var(--button-edit-hover));
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .edit-btn:hover {
+            background: var(--button-edit-hover);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        .recurring-icon {
+            color: var(--button-add-bg);
+            margin-left: 5px;
+        }
+        .paid-icon {
+            color: var(--button-add-bg);
+            margin-right: 5px;
+        }
+        .total, .remaining {
+            font-size: 1.1em;
+            font-weight: 500;
+            text-align: right;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .total {
+            background-color: var(--total-bg);
+            color: var(--total-color);
+        }
+        .remaining {
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
+        .remaining.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
+        .to-pay {
+            font-size: 1.1em;
+            font-weight: 500;
+            text-align: right;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-left: 15px;
+            margin-right: 15px;
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
 
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
+        .to-pay.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
+        .chart-container {
+            background: var(--container-background);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-top: 25px;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        canvas {
+            max-width: 100%;
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        tr {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Media Queries para Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px; /* Reduzido para telas menores */
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .menu-button {
+                align-self: flex-end;
+                padding: 6px;
+            }
+            .menu-button i {
+                font-size: 20px;
+            }
+            .settings-menu {
+                top: 80px;
+                right: 15px;
+                min-width: 180px;
+            }
+            .settings-menu li {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            .month-selector {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .month-selector select,
+            .input-section input, .input-section button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .type-selector {
+                gap: 10px;
+            }
+            .type-selector label {
+                font-size: 0.85em;
+            }
+            .input-section {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .settings-menu input[type="number"],
+            .salary-section input,
+            .salary-section button {
+                padding: 4px 8px;
+                font-size: 0.9em;
+            }
+            .salary-section input {
+                width: 80px;
+            }
+            table {
+                width: calc(100% - 20px); /* Ajustado para margens menores */
+                margin: 0 10px; /* Margens ajustadas */
+            }
+            th, td {
+                padding: 10px 12px;
+                font-size: 0.85em;
+            }
+            .total, .remaining, .to-pay {
+                font-size: 1em;
+                padding: 8px 12px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .chart-container {
+                margin-left: 10px;
+                margin-right: 10px;
             }
         }
-        return gk_fileData[filename] || "";
-        }
-</script>
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 8px; /* Reduzido ainda mais para telas muito pequenas */
+            }
+            .header {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .header h1 {
+                font-size: 1.3em;
+            }
+            .menu-button {
+                padding: 5px;
+            }
+            .menu-button i {
+                font-size: 18px;
+            }
+            .settings-menu {
+                top: 70px;
+                right: 10px;
+                min-width: 160px;
+            }
+            .settings-menu li {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+            .month-selector {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .month-selector select,
+            .input-section input, .input-section button {
+                padding: 6px 10px;
+                font-size: 0.85em;
+            }
+            .type-selector {
+                gap: 8px;
+            }
+            .type-selector label {
+                font-size: 0.8em;
+            }
+            .input-section {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+            .settings-menu input[type="number"],
+            .salary-section input,
+            .salary-section button {
+                padding: 3px 6px;
+                font-size: 0.85em;
+            }
+            .salary-section input {
+                width: 70px;
+            }
+            table {
+                width: calc(100% - 16px); /* Ajustado para margens menores */
+                margin: 0 8px; /* Margens ajustadas */
+            }
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.8em;
+            }
+It looks like the content was cut off in the middle of the `<style>` section. I'll continue from where it left off, ensuring the entire `index.html` is updated for App 2 with the `app2_` prefix for `localStorage` keys, while keeping all other parts of the code unchanged.
+
+<xaiArtifact artifact_id="a09e7307-8f6a-4c58-889e-f27063852edf" artifact_version_id="3be47b3f-d6eb-46d1-bc89-3da8f214ca0c" title="index.html" contentType="text/html">
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -747,20 +1267,20 @@
         ];
 
         // Carregar dados do localStorage ou iniciar com objeto vazio
-        let monthlyData = JSON.parse(localStorage.getItem('monthlyData')) || {};
+        let monthlyData = JSON.parse(localStorage.getItem('app2_monthlyData')) || {};
         let currentMonth = getCurrentMonth();
         let entries = [];
         let salary = 0;
         let chart;
         let editingIndex = null;
-        let isPrivacyMode = localStorage.getItem('privacyMode') === 'true' || false;
+        let isPrivacyMode = localStorage.getItem('app2_privacyMode') === 'true' || false;
 
         // Função para obter o mês atual ou próximo com base no dia de pagamento
         function getCurrentMonth() {
-            const today = new Date();
+            const today =/new Date();
             const currentDay = today.getDate();
             const currentMonthIndex = today.getMonth();
-            const paymentDay = parseInt(localStorage.getItem('paymentDay')) || 1;
+            const paymentDay = parseInt(localStorage.getItem('app2_paymentDay')) || 1;
 
             // Se o dia atual for maior que o dia de pagamento, abrir no próximo mês
             if (currentDay > paymentDay && currentMonthIndex < 11) {
@@ -789,7 +1309,7 @@
 
         // Salvar dados no localStorage
         function saveMonthlyData() {
-            localStorage.setItem('monthlyData', JSON.stringify(monthlyData));
+            localStorage.setItem('app2_monthlyData', JSON.stringify(monthlyData));
         }
 
         // Carregar dados do mês selecionado
@@ -836,13 +1356,13 @@
             const isDark = body.getAttribute('data-theme') === 'dark';
             body.setAttribute('data-theme', isDark ? 'light' : 'dark');
             document.getElementById('darkModeToggle').checked = !isDark;
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('app2_theme', isDark ? 'light' : 'dark');
             updateChart();
         }
 
         // Carregar tema salvo
         function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedTheme = localStorage.getItem('app2_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
         }
@@ -855,7 +1375,7 @@
                 paymentDay = 1;
                 paymentDayInput.value = paymentDay;
             }
-            localStorage.setItem('paymentDay', paymentDay);
+            localStorage.setItem('app2_paymentDay', paymentDay);
             // Atualizar o mês exibido com base no novo dia de pagamento
             currentMonth = getCurrentMonth();
             setDefaultMonth();
@@ -864,7 +1384,7 @@
 
         // Carregar o dia de pagamento salvo
         function loadPaymentDay() {
-            const paymentDay = localStorage.getItem('paymentDay') || 1;
+            const paymentDay = localStorage.getItem('app2_paymentDay') || 1;
             document.getElementById('paymentDay').value = paymentDay;
         }
 
@@ -1004,7 +1524,7 @@
             
             // Definir as cores para os gastos
             const expenseColors = isDarkTheme
-                ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB300', '#CE93D8']
+                ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB/spring-boot-starter-web', '#CE93D8']
                 : ['#66BB6A', '#42A5F5', '#EF5350', '#90A4AE', '#FFCA28', '#AB47BC'];
             
             // Definir a cor fixa para "Restante + Rendas" (usar hexadecimal base)
@@ -1231,7 +1751,7 @@
 
         function togglePrivacyMode() {
             isPrivacyMode = !isPrivacyMode;
-            localStorage.setItem('privacyMode', isPrivacyMode);
+            localStorage.setItem('app2_privacyMode', isPrivacyMode);
             const icon = document.getElementById('privacyToggle').querySelector('i');
             icon.classList.toggle('fa-eye', !isPrivacyMode);
             icon.classList.toggle('fa-eye-slash', isPrivacyMode);
