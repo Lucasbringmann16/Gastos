@@ -45,11 +45,8 @@
     <title>Gastos v1</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#28a745">
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/50/000000/money-bag.png">
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous">
     <style>
         :root {
@@ -118,6 +115,39 @@
             box-shadow: var(--card-shadow);
             transition: var(--transition);
             position: relative;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: var(--container-background);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .login-container button {
+            background: var(--button-add-bg);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .login-container button:hover {
+            background: var(--button-add-hover);
         }
         .header {
             display: flex;
@@ -317,8 +347,8 @@
             box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
         }
         table {
-            width: calc(100% - 30px); /* 100% menos as margens laterais */
-            margin: 0 15px; /* Margens laterais para alinhar com outros elementos */
+            width: calc(100% - 30px);
+            margin: 0 15px;
             border-collapse: collapse;
             margin-bottom: 25px;
             background: var(--container-background);
@@ -426,7 +456,6 @@
             background-color: var(--remaining-bg);
             color: var(--remaining-color);
         }
-
         .to-pay.negative {
             background-color: var(--remaining-negative-bg);
             color: var(--remaining-negative-color);
@@ -443,8 +472,6 @@
         canvas {
             max-width: 100%;
         }
-
-        /* Animações */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -452,11 +479,9 @@
         tr {
             animation: fadeIn 0.3s ease;
         }
-
-        /* Media Queries para Responsividade */
         @media (max-width: 600px) {
             .container {
-                padding: 10px; /* Reduzido para telas menores */
+                padding: 10px;
             }
             .header {
                 flex-direction: column;
@@ -513,8 +538,8 @@
                 width: 80px;
             }
             table {
-                width: calc(100% - 20px); /* Ajustado para margens menores */
-                margin: 0 10px; /* Margens ajustadas */
+                width: calc(100% - 20px);
+                margin: 0 10px;
             }
             th, td {
                 padding: 10px 12px;
@@ -531,10 +556,9 @@
                 margin-right: 10px;
             }
         }
-
         @media (max-width: 400px) {
             .container {
-                padding: 8px; /* Reduzido ainda mais para telas muito pequenas */
+                padding: 8px;
             }
             .header {
                 margin-left: 8px;
@@ -587,8 +611,8 @@
                 width: 70px;
             }
             table {
-                width: calc(100% - 16px); /* Ajustado para margens menores */
-                margin: 0 8px; /* Margens ajustadas */
+                width: calc(100% - 16px);
+                margin: 0 8px;
             }
             th, td {
                 padding: 8px 10px;
@@ -608,7 +632,14 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="loginScreen" class="login-container">
+        <h2>Login - Gastos v1</h2>
+        <input type="text" id="username" placeholder="Usuário">
+        <input type="password" id="password" placeholder="Senha">
+        <button onclick="handleLogin()">Entrar</button>
+    </div>
+
+    <div id="mainApp" class="container" style="display: none;">
         <div class="header">
             <h1><i class="fas fa-wallet"></i> Gastos v1</h1>
             <button class="menu-button" onclick="toggleSettingsMenu()">
@@ -699,14 +730,59 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script>
+        // Gerenciamento de Login
+        let isAuthenticated = false;
+        const defaultUsers = {
+            "admin": sha256("admin123") // Usuário padrão: admin, senha: admin123
+        };
+        let users = JSON.parse(localStorage.getItem('app2_users')) || defaultUsers;
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const hashedPassword = sha256(password);
+
+            if (users[username] && users[username] === hashedPassword) {
+                isAuthenticated = true;
+                localStorage.setItem('app2_authenticated', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initializeApp();
+            } else {
+                alert('Usuário ou senha incorretos!');
+            }
+        }
+
+        function checkAuthentication() {
+            if (localStorage.getItem('app2_authenticated') === 'true') {
+                isAuthenticated = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initializeApp();
+            }
+        }
+
+        function initializeApp() {
+            initializeMonthlyData();
+            setDefaultMonth();
+            loadTheme();
+            loadPaymentDay();
+            toggleRecurringOption();
+            const privacyIcon = document.getElementById('privacyToggle').querySelector('i');
+            privacyIcon.classList.toggle('fa-eye', !isPrivacyMode);
+            privacyIcon.classList.toggle('fa-eye-slash', isPrivacyMode);
+            loadMonthData();
+            updateToPay();
+        }
+
         // Lista de meses para facilitar o acesso
         const months = [
             "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
         ];
 
-        // Carregar dados do localStorage ou iniciar com objeto vazio
         let monthlyData = JSON.parse(localStorage.getItem('app2_monthlyData')) || {};
         let currentMonth = getCurrentMonth();
         let entries = [];
@@ -715,27 +791,23 @@
         let editingIndex = null;
         let isPrivacyMode = localStorage.getItem('app2_privacyMode') === 'true' || false;
 
-        // Função para obter o mês atual ou próximo com base no dia de pagamento
         function getCurrentMonth() {
             const today = new Date();
             const currentDay = today.getDate();
             const currentMonthIndex = today.getMonth();
             const paymentDay = parseInt(localStorage.getItem('app2_paymentDay')) || 1;
 
-            // Se o dia atual for maior que o dia de pagamento, abrir no próximo mês
             if (currentDay > paymentDay && currentMonthIndex < 11) {
                 return months[currentMonthIndex + 1];
             }
             return months[currentMonthIndex];
         }
 
-        // Inicializar dados para todos os meses, se não existirem
         function initializeMonthlyData() {
             months.forEach(month => {
                 if (!monthlyData[month]) {
                     monthlyData[month] = { entries: [], salary: 0 };
                 } else if (monthlyData[month].expenses) {
-                    // Migrar dados antigos e adicionar isPaid
                     monthlyData[month].entries = monthlyData[month].expenses.map(expense => ({
                         ...expense,
                         type: 'expense',
@@ -747,14 +819,12 @@
             saveMonthlyData();
         }
 
-        // Salvar dados no localStorage
         function saveMonthlyData() {
             localStorage.setItem('app2_monthlyData', JSON.stringify(monthlyData));
         }
 
-        // Carregar dados do mês selecionado
         function loadMonthData() {
-            initializeMonthlyData(); // Garantir que os dados sejam inicializados
+            initializeMonthlyData();
             const month = document.getElementById('monthSelect').value;
             currentMonth = month;
             entries = monthlyData[month].entries || [];
@@ -766,13 +836,11 @@
             updateToPay();
         }
 
-        // Definir o mês atual ou próximo como padrão no <select>
         function setDefaultMonth() {
             const monthSelect = document.getElementById('monthSelect');
             monthSelect.value = currentMonth;
         }
 
-        // Registrar o Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -785,7 +853,6 @@
             });
         }
 
-        // Gerenciar menu de configurações
         function toggleSettingsMenu() {
             const menu = document.getElementById('settingsMenu');
             if (menu) {
@@ -793,7 +860,6 @@
             }
         }
 
-        // Gerenciar tema
         function toggleTheme() {
             const body = document.body;
             const isDark = body.getAttribute('data-theme') === 'dark';
@@ -803,14 +869,12 @@
             updateChart();
         }
 
-        // Carregar tema salvo
         function loadTheme() {
             const savedTheme = localStorage.getItem('app2_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
         }
 
-        // Definir e salvar o dia de pagamento
         function setPaymentDay() {
             const paymentDayInput = document.getElementById('paymentDay');
             let paymentDay = parseInt(paymentDayInput.value);
@@ -819,13 +883,11 @@
                 paymentDayInput.value = paymentDay;
             }
             localStorage.setItem('app2_paymentDay', paymentDay);
-            // Atualizar o mês exibido com base no novo dia de pagamento
             currentMonth = getCurrentMonth();
             setDefaultMonth();
             loadMonthData();
         }
 
-        // Carregar o dia de pagamento salvo
         function loadPaymentDay() {
             const paymentDay = localStorage.getItem('app2_paymentDay') || 1;
             document.getElementById('paymentDay').value = paymentDay;
@@ -847,7 +909,6 @@
             if (!isNaN(salaryValue) && salaryValue >= 0) {
                 const currentMonthIndex = getMonthIndex(currentMonth);
 
-                // Definir o salário do mês atual em diante
                 for (let i = currentMonthIndex; i < months.length; i++) {
                     const targetMonth = months[i];
                     monthlyData[targetMonth].salary = salaryValue;
@@ -935,28 +996,22 @@
 
             ctx.canvas.style.display = 'block';
             
-            // Calcular o total de gastos
             const totalExpenses = entries
                 .filter(entry => entry.type === 'expense')
                 .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
             
-            // Calcular o total de rendas
             const totalIncome = entries
                 .filter(entry => entry.type === 'income')
                 .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
             
-            // Obter o salário do mês atual
             const currentSalary = monthlyData[currentMonth].salary || 0;
             
-            // Calcular o valor restante para o gráfico, incluindo rendas (evitar valores negativos)
             const totalBudget = currentSalary + totalIncome;
             const remainingForChart = totalBudget > 0 ? Math.max(totalBudget - totalExpenses, 0) : 0;
             
-            // Preparar os dados para o gráfico
             const expenseLabels = entries.filter(entry => entry.type === 'expense').map(entry => entry.name);
             const expenseData = entries.filter(entry => entry.type === 'expense').map(entry => entry.amount);
             
-            // Adicionar a fatia "Restante + Rendas" se o orçamento total (salário + rendas) for maior que 0
             const labels = [...expenseLabels];
             const data = [...expenseData];
             const hasRemaining = totalBudget > 0 && remainingForChart > 0;
@@ -965,15 +1020,12 @@
                 data.push(remainingForChart);
             }
             
-            // Definir as cores para os gastos
             const expenseColors = isDarkTheme
                 ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB300', '#CE93D8']
                 : ['#66BB6A', '#42A5F5', '#EF5350', '#90A4AE', '#FFCA28', '#AB47BC'];
             
-            // Definir a cor fixa para "Restante + Rendas" (usar hexadecimal base)
             const remainingBaseColor = isDarkTheme ? '#808080' : '#D3D3D3';
             
-            // Criar array de cores com opacidade específica para "Restante + Rendas"
             const backgroundColors = expenseData.map((_, index) => expenseColors[index % expenseColors.length]);
             if (hasRemaining) {
                 backgroundColors.push(remainingBaseColor);
@@ -1076,7 +1128,7 @@
                     const isSameEntry = ent.name === entryName && ent.amount === entryAmount && ent.isRecurring && ent.type === entryType;
                     if (!isSameEntry) return true;
                     if (removeAll) return false;
-                    return i !== startMonthIndex; // Remove apenas no mês atual
+                    return i !== startMonthIndex;
                 });
             }
             saveMonthlyData();
@@ -1113,7 +1165,6 @@
                     entries[editingIndex] = newEntry;
                     monthlyData[currentMonth].entries = entries;
                 } else if (!isRecurring) {
-                    // Adicionar apenas se não for recorrente
                     monthlyData[entryMonth].entries.push(newEntry);
                 }
 
@@ -1209,7 +1260,6 @@
             updateToPay();
         }
 
-        // Configurar delegação de eventos após o carregamento do DOM
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('entryTable').addEventListener('click', (event) => {
                 const index = parseInt(event.target.getAttribute('data-index') || event.target.parentElement.getAttribute('data-index'));
@@ -1222,7 +1272,6 @@
                 }
             });
 
-            // Fechar menu ao clicar fora
             document.addEventListener('click', (event) => {
                 const menu = document.getElementById('settingsMenu');
                 const menuButton = document.querySelector('.menu-button');
@@ -1230,24 +1279,13 @@
                     menu.classList.remove('active');
                 }
             });
+
+            checkAuthentication();
         });
 
-        // Controlar visibilidade do checkbox "Recorrente"
         document.querySelectorAll('input[name="entryType"]').forEach(radio => {
             radio.addEventListener('change', toggleRecurringOption);
         });
-
-        // Inicializar a página
-        initializeMonthlyData();
-        setDefaultMonth();
-        loadTheme();
-        loadPaymentDay();
-        toggleRecurringOption();
-        const privacyIcon = document.getElementById('privacyToggle').querySelector('i');
-        privacyIcon.classList.toggle('fa-eye', !isPrivacyMode);
-        privacyIcon.classList.toggle('fa-eye-slash', isPrivacyMode);
-        loadMonthData();
-        updateToPay();
     </script>
     <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9387dbbc3f364520',t:'MTc0NjAyNDY5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
