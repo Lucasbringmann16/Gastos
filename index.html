@@ -130,7 +130,8 @@
             font-size: 1.5em;
         }
 
-        .login-container input { /* Estilo não usado mais para login, mas mantido */
+        .login-container input {
+            /* Estilo não usado mais para login, mas mantido */
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -139,21 +140,25 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        .login-container button { /* Estilo para o botão de login com Google */
-            background: var(--button-add-bg); /* Pode querer um estilo específico para Google, ex: #4285F4 */
+        .login-container button {
+            /* Estilo para o botão de login com Google */
+            background: var(--button-add-bg);
+            /* Pode querer um estilo específico para Google, ex: #4285F4 */
             color: #fff;
             border: none;
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
             transition: var(--transition);
-            display: inline-flex; /* Para alinhar ícone e texto */
+            display: inline-flex;
+            /* Para alinhar ícone e texto */
             align-items: center;
             gap: 8px;
         }
 
         .login-container button:hover {
-            background: var(--button-add-hover); /* Ou um hover específico para Google */
+            background: var(--button-add-hover);
+            /* Ou um hover específico para Google */
         }
 
         .header {
@@ -243,18 +248,22 @@
             color: var(--text-color);
             font-family: 'Poppins', sans-serif;
         }
+
         /* Estilo para o slider do modo escuro (se não existir, adicione) */
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 40px; /* Ajuste o tamanho conforme necessário */
+            width: 40px;
+            /* Ajuste o tamanho conforme necessário */
             height: 20px;
         }
+
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -264,24 +273,31 @@
             bottom: 0;
             background-color: #ccc;
             transition: .4s;
-            border-radius: 20px; /* Para torná-lo arredondado */
+            border-radius: 20px;
+            /* Para torná-lo arredondado */
         }
+
         .slider:before {
             position: absolute;
             content: "";
-            height: 14px; /* Ajuste o tamanho do círculo */
+            height: 14px;
+            /* Ajuste o tamanho do círculo */
             width: 14px;
-            left: 3px; /* Posição inicial do círculo */
+            left: 3px;
+            /* Posição inicial do círculo */
             bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider {
+
+        input:checked+.slider {
             background-color: var(--button-add-bg);
         }
-        input:checked + .slider:before {
-            transform: translateX(20px); /* Distância que o círculo se move */
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+            /* Distância que o círculo se move */
         }
 
 
@@ -403,7 +419,8 @@
         }
 
         .input-section button,
-        .salary-section button { /* Estilo para botões Adicionar, Cancelar, e botão de Salário */
+        .salary-section button {
+            /* Estilo para botões Adicionar, Cancelar, e botão de Salário */
             background: linear-gradient(135deg, var(--button-add-bg), var(--button-add-hover));
             color: #fff;
             border: none;
@@ -412,6 +429,7 @@
             align-items: center;
             gap: 6px;
         }
+
         .input-section button:hover,
         .salary-section button:hover {
             background: var(--button-add-hover);
@@ -421,6 +439,7 @@
         .input-section .cancel-btn {
             background: linear-gradient(135deg, var(--button-cancel-bg), var(--button-cancel-hover));
         }
+
         .input-section .cancel-btn:hover {
             background: var(--button-cancel-hover);
             box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
@@ -435,28 +454,51 @@
             border-radius: 8px;
             box-shadow: var(--card-shadow);
         }
-        table, th, td { border: none; }
-        th, td {
+
+        table,
+        th,
+        td {
+            border: none;
+        }
+
+        th,
+        td {
             padding: 12px 15px;
             text-align: left;
             color: var(--text-color);
             font-size: 0.9em;
         }
+
         th {
             background-color: var(--table-header-bg);
             font-weight: 600;
             border-bottom: 1px solid var(--border-color);
         }
+
         tr {
             border-bottom: 1px solid var(--border-color);
             transition: background-color 0.3s ease;
         }
-        tr:last-child { border-bottom: none; }
-        tr:nth-child(even) { background-color: rgba(0, 0, 0, 0.02); }
-        tr:nth-child(even)[data-theme="dark"] { background-color: rgba(255, 255, 255, 0.02); }
-        tr:hover { background-color: rgba(40, 167, 69, 0.05); }
 
-        .delete-btn, .edit-btn { /* Estilos consolidados para botões de ação da tabela */
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        tr:nth-child(even)[data-theme="dark"] {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        tr:hover {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+
+        .delete-btn,
+        .edit-btn {
+            /* Estilos consolidados para botões de ação da tabela */
             color: #fff;
             border: none;
             padding: 6px 12px;
@@ -467,41 +509,78 @@
             align-items: center;
             gap: 4px;
         }
+
         .delete-btn {
             background: linear-gradient(135deg, var(--button-delete-bg), var(--button-delete-hover));
-            margin-right: 6px; /* Mantido se desejado */
+            margin-right: 6px;
+            /* Mantido se desejado */
         }
+
         .delete-btn:hover {
             background: var(--button-delete-hover);
             box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
+
         .edit-btn {
             background: linear-gradient(135deg, var(--button-edit-bg), var(--button-edit-hover));
         }
+
         .edit-btn:hover {
             background: var(--button-edit-hover);
             box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
 
-        .recurring-icon { color: var(--button-add-bg); margin-left: 5px; }
-        .paid-icon { color: var(--button-add-bg); margin-right: 5px; }
+        .recurring-icon {
+            color: var(--button-add-bg);
+            margin-left: 5px;
+        }
 
-        .total, .remaining, .to-pay {
+        .paid-icon {
+            color: var(--button-add-bg);
+            margin-right: 5px;
+        }
+
+        .total,
+        .remaining,
+        .to-pay {
             font-size: 1.1em;
             font-weight: 500;
             text-align: right;
             margin-bottom: 15px;
             padding: 10px 15px;
             border-radius: 6px;
-            display: inline-block; /* Ou flex se precisar de mais controle interno */
-            margin-left: 15px; /* Cuidado com múltiplos elementos inline-block e espaçamento */
+            display: inline-block;
+            /* Ou flex se precisar de mais controle interno */
+            margin-left: 15px;
+            /* Cuidado com múltiplos elementos inline-block e espaçamento */
             margin-right: 15px;
         }
-        .total { background-color: var(--total-bg); color: var(--total-color); }
-        .remaining { background-color: var(--remaining-bg); color: var(--remaining-color); }
-        .remaining.negative { background-color: var(--remaining-negative-bg); color: var(--remaining-negative-color); }
-        .to-pay { background-color: var(--remaining-bg); color: var(--remaining-color); } /* Ajustar se necessário para diferenciar de 'remaining' */
-        .to-pay.negative { background-color: var(--remaining-negative-bg); color: var(--remaining-negative-color); }
+
+        .total {
+            background-color: var(--total-bg);
+            color: var(--total-color);
+        }
+
+        .remaining {
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
+
+        .remaining.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
+
+        .to-pay {
+            background-color: var(--remaining-bg);
+            color: var(--remaining-color);
+        }
+
+        /* Ajustar se necessário para diferenciar de 'remaining' */
+        .to-pay.negative {
+            background-color: var(--remaining-negative-bg);
+            color: var(--remaining-negative-color);
+        }
 
         .chart-container {
             background: var(--container-background);
@@ -512,17 +591,245 @@
             margin-left: 15px;
             margin-right: 15px;
         }
-        canvas { max-width: 100%; }
+
+        canvas {
+            max-width: 100%;
+        }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        tr { animation: fadeIn 0.3s ease; }
+
+        tr {
+            animation: fadeIn 0.3s ease;
+        }
 
         /* Media Queries Mantidas como no seu original */
-        @media (max-width: 600px) { /* ... */ }
-        @media (max-width: 400px) { /* ... */ }
+        @media (max-width: 600px) {
+            /* ... */
+        }
+
+        @media (max-width: 400px) {
+            /* ... */
+        }
+
+        @media (max-width: 768px) {
+
+            /* Você pode ajustar este breakpoint se necessário */
+            .input-section {
+                gap: 10px;
+                /* Reduzir o espaço entre os itens */
+            }
+
+            .input-section input[type="text"],
+            .input-section input[type="number"],
+            .input-section input[type="date"] {
+                flex-grow: 1;
+                /* Permite que cresçam para preencher o espaço */
+                flex-basis: calc(50% - 10px);
+                /* Tenta colocar 2 por linha, ajuste o '10px' conforme o gap */
+                min-width: 180px;
+                /* Um mínimo para não ficarem muito pequenos antes de quebrar */
+                box-sizing: border-box;
+            }
+
+            .input-section .type-selector,
+            .input-section .recurring-label {
+                flex-basis: 100%;
+                /* Faz com que ocupem a linha inteira */
+                margin-top: 5px;
+            }
+
+            .input-section button#addBtn,
+            .input-section button#cancelBtn {
+                flex-basis: 100%;
+                /* Botões principais ocupam a linha toda */
+                margin-top: 10px;
+            }
+        }
+
+        /* Para telas realmente pequenas (como nos seus prints de 375px, 412px), empilhar é mais seguro */
+        @media (max-width: 600px) {
+            .input-section {
+                flex-direction: column;
+                /* Empilha todos os itens verticalmente */
+                align-items: stretch;
+                /* Faz com que os itens se estiquem na largura */
+                gap: 12px;
+                /* Ajuste o espaçamento vertical */
+                /* Remova margin-left e margin-right se quiser que ocupe 100% do container,
+           ou ajuste o padding do .container */
+                margin-left: 0;
+                margin-right: 0;
+                padding: 15px;
+                /* Manter um padding interno */
+
+            }
+
+            .input-section input[type="text"],
+            .input-section input[type="number"],
+            .input-section input[type="date"],
+            .input-section .type-selector,
+            .input-section .recurring-label,
+            .input-section button {
+                /* Aplica a todos os filhos diretos que são inputs ou botões */
+                width: 100%;
+                /* Ocupam toda a largura disponível */
+                box-sizing: border-box;
+                /* Importante para o cálculo da largura */
+                margin-bottom: 8px;
+                /* Espaçamento entre itens empilhados */
+            }
+
+            .input-section button {
+                margin-top: 5px;
+                /* Um pouco de espaço antes dos botões */
+            }
+
+            .input-section .type-selector {
+                justify-content: flex-start;
+                /* Alinha os radios no início */
+                gap: 15px;
+                /* Espaço entre os radios */
+            }
+
+            .input-section .recurring-label {
+                justify-content: flex-start;
+            }
+
+            /* Seus ajustes de padding e font-size existentes para 600px: */
+            .input-section input,
+            .input-section button {
+                /* Já estava no seu código, pode manter/ajustar */
+                /* padding: 8px 12px; */
+                /* O padding já está no seletor mais genérico acima */
+                font-size: 0.9em;
+            }
+        }
+
+        /* Ajustes ainda menores para 400px, se necessário, refinando o de 600px */
+        @media (max-width: 400px) {
+            .input-section {
+                padding: 10px;
+                /* Menos padding no container do input */
+                gap: 10px;
+            }
+
+            .input-section input,
+            .input-section button {
+                font-size: 0.85em;
+                /* Fontes um pouco menores */
+                /* padding: 6px 10px; */
+                /* O padding já está no seletor mais genérico acima */
+            }
+
+            .input-section button {
+                /* Herda width 100% de cima */
+                padding-top: 8px;
+                padding-bottom: 8px;
+            }
+        }
+
+        /* Adicione este CSS fora de qualquer media query (estilos base) */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            /* ESSENCIAL: permite rolagem horizontal apenas para este container */
+            width: 100%;
+            /* O wrapper ocupa a largura total disponível */
+            -webkit-overflow-scrolling: touch;
+            /* Para uma rolagem mais suave em iOS */
+            margin-bottom: 25px;
+            /* Mantém a margem que a tabela tinha */
+        }
+
+        table#entryTable {
+            width: 100%;
+            /* A tabela tenta ocupar 100% do seu wrapper (que agora é rolável) */
+            min-width: 500px;
+            /* Opcional: defina uma largura mínima para a tabela,
+                            abaixo da qual a rolagem horizontal começará.
+                            Ajuste este valor conforme o conteúdo da sua tabela. */
+            margin: 0;
+            /* Remove as margens laterais da tabela, pois o wrapper controla */
+            /* Seus outros estilos de tabela como border-collapse, etc., continuam aqui */
+        }
+
+        /* Ajustes dentro das Media Queries para a tabela */
+        @media (max-width: 600px) {
+
+            /* Seus ajustes de padding e font-size existentes para 600px para th, td: */
+            table#entryTable th,
+            table#entryTable td {
+                padding: 10px 8px;
+                /* Reduzir padding lateral */
+                font-size: 0.85em;
+                white-space: nowrap;
+                /* Evita que o conteúdo das células quebre em várias linhas,
+                                 forçando a rolagem se necessário. Opcional. */
+            }
+
+            table#entryTable .edit-btn,
+            table#entryTable .delete-btn {
+                padding: 5px 8px;
+                /* Botões menores */
+                font-size: 0.8em;
+                /* Fonte menor nos botões */
+            }
+
+            /* Opcional: Fazer botões de ação empilharem ou ocuparem menos espaço */
+            table#entryTable td:last-child {
+                /* Coluna "Ação" */
+                min-width: 110px;
+                /* Garante um espaço mínimo para os botões lado a lado */
+            }
+        }
+
+        @media (max-width: 400px) {
+
+            /* Seus ajustes de padding e font-size existentes para 400px para th, td: */
+            table#entryTable th,
+            table#entryTable td {
+                padding: 8px 5px;
+                /* Padding ainda menor */
+                font-size: 0.8em;
+                /* Fonte ainda menor */
+            }
+
+            table#entryTable .edit-btn,
+            table#entryTable .delete-btn {
+                padding: 4px 6px;
+                font-size: 0.75em;
+            }
+
+            /* Em telas muito pequenas, pode ser útil empilhar os botões de ação */
+            table#entryTable td:last-child button {
+                display: block;
+                /* Faz cada botão ocupar uma linha */
+                width: 100%;
+                /* Ocupa toda a largura da célula (ou do bloco) */
+                margin-bottom: 4px;
+                /* Espaço entre botões empilhados */
+                box-sizing: border-box;
+            }
+
+            table#entryTable td:last-child button:last-child {
+                margin-bottom: 0;
+                /* Remove a margem do último botão */
+            }
+
+            table#entryTable td:last-child {
+                min-width: 80px;
+                /* Ajusta o min-width para quando os botões estão empilhados */
+            }
+        }
     </style>
 </head>
 
@@ -563,7 +870,8 @@
                 </li>
                 <li>
                     <span><i class="fas fa-sign-out-alt"></i> Sair</span>
-                    <button id="signOutBtn" style="background: var(--button-delete-bg); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i
+                    <button id="signOutBtn"
+                        style="background: var(--button-delete-bg); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i
                             class="fas fa-sign-out-alt"></i>
                     </button>
                 </li>
@@ -608,20 +916,22 @@
                 Recorrente
             </label>
             <button id="addBtn"> <i class="fas fa-plus"></i> Adicionar</button>
-            <button id="cancelBtn" class="cancel-btn" style="display: none;"><i
-                    class="fas fa-times"></i> Cancelar</button>
+            <button id="cancelBtn" class="cancel-btn" style="display: none;"><i class="fas fa-times"></i>
+                Cancelar</button>
         </div>
-        <table id="entryTable">
-            <thead>
-                <tr>
-                    <th>Descrição</th>
-                    <th>Valor (R$)</th>
-                    <th>Data de Pagamento</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="entryTableBody"></tbody>
-        </table>
+        <div class="table-responsive-wrapper">
+            <table id="entryTable">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor (R$)</th>
+                        <th>Data de Pagamento</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="entryTableBody"></tbody>
+            </table>
+        </div>
         <div class="total" id="totalAmount">Total de Gastos: R$ 0,00</div>
         <div class="remaining" id="remainingAmount">Restante: R$ 0,00</div>
         <div class="to-pay" id="toPayAmount">A pagar: R$ 0,00</div>
@@ -680,23 +990,23 @@
             signOut(auth).then(() => {
                 console.log('Usuário deslogado com sucesso.');
                 // Limpeza de dados em memória ao deslogar
-                entries = []; 
-                salary = 0; 
-                monthlyData = {}; 
+                entries = [];
+                salary = 0;
+                monthlyData = {};
                 // Outras limpezas podem ser necessárias
                 // Por exemplo, limpar a tabela explicitamente se `setupAppUI` não fizer isso ao ser chamado sem usuário
                 const tableBody = document.getElementById('entryTableBody');
-                if(tableBody) tableBody.innerHTML = '';
+                if (tableBody) tableBody.innerHTML = '';
                 document.getElementById('totalAmount').textContent = 'Total de Gastos: R$ 0,00';
                 document.getElementById('remainingAmount').textContent = 'Restante: R$ 0,00';
                 document.getElementById('toPayAmount').textContent = 'A pagar: R$ 0,00';
-                if(chart) chart.destroy(); // Destruir o gráfico ao deslogar
+                if (chart) chart.destroy(); // Destruir o gráfico ao deslogar
             }).catch((error) => {
                 console.error('Erro ao fazer logout:', error.message);
                 alert('Erro ao fazer logout: ' + error.message);
             });
         }
-        
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 console.log('onAuthStateChanged: Usuário logado', user.uid);
@@ -734,11 +1044,11 @@
             // A lógica de `initializeMonthlyData` e `loadMonthData` será adaptada para Firebase
             loadTheme(); // Preferências de UI podem vir do localStorage
             loadPaymentDay(); // Preferências de UI podem vir do localStorage
-            
+
             const privacyIcon = document.getElementById('privacyToggle').querySelector('i');
             privacyIcon.classList.toggle('fa-eye', !isPrivacyMode);
             privacyIcon.classList.toggle('fa-eye-slash', isPrivacyMode);
-            
+
             // A chamada para carregar dados do mês (ex: loadMonthData()) deve ocorrer aqui,
             // mas agora ela buscará dados do Firebase.
             // O `onAuthStateChanged` já chama `setupAppUI`.
@@ -776,8 +1086,8 @@
                     monthlyData[month] = { entries: [], salary: 0 };
                     dataChanged = true; // Indica que a estrutura local foi modificada
                 } else if (!monthlyData[month].entries) { // Garante que entries exista
-                     monthlyData[month].entries = [];
-                     dataChanged = true;
+                    monthlyData[month].entries = [];
+                    dataChanged = true;
                 } else if (monthlyData[month].expenses) { // Migração de formato antigo (se aplicável)
                     monthlyData[month].entries = monthlyData[month].expenses.map(expense => ({
                         ...expense,
@@ -795,7 +1105,7 @@
             // Não chamar saveMonthlyData() aqui se estivermos apenas inicializando a estrutura local
             // A leitura do Firebase (onValue) trará os dados, e o saveMonthlyData só deve ocorrer em mudanças explícitas.
         }
-        
+
         function saveMonthlyData() {
             const user = auth.currentUser;
             if (user && currentMonth) { // Salva apenas o mês atual
@@ -835,9 +1145,9 @@
                     // Agora processa os dados para o currentMonth específico
                     entries = monthlyData[currentMonth]?.entries || [];
                     salary = monthlyData[currentMonth]?.salary || 0;
-                    
+
                     console.log(`Dados carregados para ${currentMonth} do Firebase:`, monthlyData[currentMonth]);
-                    
+
                     updateUIComponents(); // Função central para atualizar toda a UI
                 }, { onlyOnce: true }); // onlyOnce: true para carregar uma vez, ajuste se precisar de tempo real constante
             } else {
@@ -850,7 +1160,7 @@
                 updateUIComponents();
             }
         }
-        
+
         function updateUIComponents() {
             updateTable();
             updateSalaryDisplay();
@@ -898,9 +1208,9 @@
             const savedTheme = localStorage.getItem('app2_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             const darkModeToggle = document.getElementById('darkModeToggle');
-            if(darkModeToggle) darkModeToggle.checked = savedTheme === 'dark';
+            if (darkModeToggle) darkModeToggle.checked = savedTheme === 'dark';
         }
-        
+
         function setPaymentDay() {
             const paymentDayInput = document.getElementById('paymentDay');
             let paymentDay = parseInt(paymentDayInput.value);
@@ -922,7 +1232,7 @@
         function loadPaymentDay() {
             const paymentDay = localStorage.getItem('app2_paymentDay') || "1";
             const paymentDayInput = document.getElementById('paymentDay');
-            if(paymentDayInput) paymentDayInput.value = paymentDay;
+            if (paymentDayInput) paymentDayInput.value = paymentDay;
         }
 
         function formatCurrency(value) {
@@ -952,7 +1262,7 @@
                 salary = salaryValue; // Atualiza a variável global `salary`
 
                 saveMonthlyData(); // Salva no Firebase (e/ou localStorage)
-                
+
                 salaryInput.value = ''; // Limpa o input
                 updateSalaryDisplay();
                 updateRemaining();
@@ -964,7 +1274,7 @@
         function updateSalaryDisplay() {
             const salaryElement = document.getElementById('currentSalary');
             if (salaryElement) {
-                 salaryElement.textContent = salary > 0 && !isPrivacyMode ? formatCurrency(salary) : '';
+                salaryElement.textContent = salary > 0 && !isPrivacyMode ? formatCurrency(salary) : '';
             }
         }
 
@@ -972,7 +1282,7 @@
             const tableBody = document.getElementById('entryTableBody');
             if (!tableBody) return;
             tableBody.innerHTML = '';
-            
+
             const currentEntries = monthlyData[currentMonth]?.entries || [];
 
             currentEntries.forEach((entry, index) => {
@@ -980,7 +1290,7 @@
                 const valueColor = entry.type === 'income' ? 'var(--remaining-color)' : 'var(--remaining-negative-color)';
                 const displayValue = isPrivacyMode ? '****' : formatCurrency(entry.amount);
                 const paidIcon = entry.isPaid ? '<i class="fas fa-check paid-icon"></i>' : '';
-                
+
                 row.innerHTML = `
                     <td style="cursor: pointer;" data-action="toggle-paid" data-index="${index}">${paidIcon} ${entry.name}${entry.isRecurring ? ' <i class="fas fa-redo-alt recurring-icon"></i>' : ''}</td>
                     <td style="color: ${valueColor}">${displayValue}</td>
@@ -1011,10 +1321,10 @@
             const totalIncome = currentEntries
                 .filter(entry => entry.type === 'income')
                 .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
-            
+
             const totalBudget = currentSalary + totalIncome;
             const remaining = totalBudget - totalExpenses;
-            
+
             const remainingElement = document.getElementById('remainingAmount');
             if (isPrivacyMode) {
                 remainingElement.textContent = 'Restante: ****';
@@ -1030,7 +1340,7 @@
             const totalToPay = currentEntries
                 .filter(entry => entry.type === 'expense' && !entry.isPaid)
                 .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
-            
+
             const toPayElement = document.getElementById('toPayAmount');
             toPayElement.textContent = `A pagar: ${formatCurrency(totalToPay)}`;
             toPayElement.classList.toggle('negative', totalToPay > 0);
@@ -1048,7 +1358,7 @@
                 return;
             }
             ctx.canvas.style.display = 'block';
-            
+
             const currentEntries = monthlyData[currentMonth]?.entries || [];
             const currentSalaryValue = monthlyData[currentMonth]?.salary || 0;
 
@@ -1058,13 +1368,13 @@
             const totalIncome = currentEntries
                 .filter(entry => entry.type === 'income')
                 .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
-            
+
             const totalBudget = currentSalaryValue + totalIncome;
             const remainingForChart = totalBudget > 0 ? Math.max(totalBudget - totalExpenses, 0) : 0;
-            
+
             const expenseLabels = currentEntries.filter(entry => entry.type === 'expense').map(entry => entry.name);
             const expenseData = currentEntries.filter(entry => entry.type === 'expense').map(entry => parseFloat(entry.amount || 0));
-            
+
             const labels = [...expenseLabels];
             const data = [...expenseData];
             const hasRemainingOrIncome = (remainingForChart > 0 && totalBudget > 0);
@@ -1073,16 +1383,16 @@
                 labels.push('Disponível (Salário + Rendas - Gastos)');
                 data.push(remainingForChart);
             } else if (totalBudget <= 0 && totalExpenses === 0) { // Caso não haja dados
-                 if (chart) chart.destroy();
-                 // Opcional: mostrar mensagem de "sem dados para o gráfico"
-                 return;
+                if (chart) chart.destroy();
+                // Opcional: mostrar mensagem de "sem dados para o gráfico"
+                return;
             }
-            
+
             const expenseColors = isDarkTheme
                 ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB300', '#CE93D8']
                 : ['#66BB6A', '#42A5F5', '#EF5350', '#90A4AE', '#FFCA28', '#AB47BC'];
             const remainingBaseColor = isDarkTheme ? 'rgba(128, 128, 128, 0.7)' : 'rgba(211, 211, 211, 0.7)';
-            
+
             const backgroundColors = expenseData.map((_, index) => expenseColors[index % expenseColors.length]);
             if (hasRemainingOrIncome) {
                 backgroundColors.push(remainingBaseColor);
@@ -1131,7 +1441,7 @@
             const [yearStr, monthStr, dayStr] = entryData.date.split('-');
             const parsedYear = parseInt(yearStr);
             const parsedDay = parseInt(dayStr);
-            
+
             // O startMonthIndexParam é o índice do mês onde a entrada original foi adicionada/editada
             // Se estamos editando, e a recorrência é mantida ou adicionada,
             // as entradas futuras a partir da data original devem ser consideradas.
@@ -1156,22 +1466,22 @@
                 if (!monthlyData[targetMonthName]) {
                     monthlyData[targetMonthName] = { entries: [], salary: 0 };
                 }
-                
+
                 // Se estamos editando a entrada original (i == actualStartMonthIndexForLoop) E é o mês da edição
                 if (i === originalEntryMonthIndex && editingIndex !== null && targetMonthName === currentMonth) {
                     monthlyData[targetMonthName].entries[editingIndex] = newRecurringEntry;
                 } else {
                     // Para meses futuros ou se for uma nova entrada recorrente
                     // Evitar duplicatas se a entrada já existe e é a mesma
-                    const existingEntryIndex = monthlyData[targetMonthName].entries.findIndex(e => 
-                        e.name === newRecurringEntry.name && 
-                        e.amount === newRecurringEntry.amount && 
+                    const existingEntryIndex = monthlyData[targetMonthName].entries.findIndex(e =>
+                        e.name === newRecurringEntry.name &&
+                        e.amount === newRecurringEntry.amount &&
                         e.type === newRecurringEntry.type &&
-                        e.date.substring(0,7) === newRecurringEntry.date.substring(0,7) // Compara ano e mês
+                        e.date.substring(0, 7) === newRecurringEntry.date.substring(0, 7) // Compara ano e mês
                     );
 
                     if (existingEntryIndex === -1) {
-                         monthlyData[targetMonthName].entries.push(newRecurringEntry);
+                        monthlyData[targetMonthName].entries.push(newRecurringEntry);
                     } else {
                         // Se já existe uma entrada similar no mesmo mês (ex: de uma edição anterior),
                         // podemos decidir sobrescrevê-la ou ignorar.
@@ -1185,7 +1495,7 @@
                 set(monthDataRef, monthlyData[targetMonthName]);
             }
         }
-        
+
         function removeRecurringEntries(entryName, entryAmount, entryType, originalDateStr, fromMonthName) {
             const user = auth.currentUser;
             if (!user) return;
@@ -1215,7 +1525,7 @@
         function toggleRecurringOption() { // Esta função pode ser simplificada ou removida
             // A visibilidade do recurringOption pode ser controlada por CSS ou no HTML diretamente
             const recurringOption = document.getElementById('recurringOption');
-            if(recurringOption) recurringOption.style.display = 'block'; // ou 'flex' dependendo do seu CSS
+            if (recurringOption) recurringOption.style.display = 'block'; // ou 'flex' dependendo do seu CSS
         }
 
         function addOrUpdateEntry() {
@@ -1240,23 +1550,23 @@
             const entryMonthName = months[entryMonthIndex];
 
             const entryData = { name, amount, date: dateStr, type, isRecurring, isPaid: false };
-            
+
             // Garante que a estrutura para o mês da entrada exista
             if (!monthlyData[entryMonthName]) {
-                 monthlyData[entryMonthName] = { entries: [], salary: 0 };
+                monthlyData[entryMonthName] = { entries: [], salary: 0 };
             }
             if (!monthlyData[entryMonthName].entries) {
-                 monthlyData[entryMonthName].entries = [];
+                monthlyData[entryMonthName].entries = [];
             }
 
             if (editingIndex !== null) { // Editando uma entrada existente
                 const oldEntry = monthlyData[currentMonth].entries[editingIndex];
-                
+
                 // Se a recorrência mudou de true para false, ou se a entrada não é mais recorrente
                 if (oldEntry.isRecurring && !isRecurring) {
                     removeRecurringEntries(oldEntry.name, oldEntry.amount, oldEntry.type, oldEntry.date, currentMonth);
                 }
-                
+
                 monthlyData[currentMonth].entries[editingIndex] = entryData; // Atualiza a entrada no mês atual
 
                 if (isRecurring) { // Se AGORA é recorrente (seja uma nova recorrência ou mantendo uma existente)
@@ -1270,7 +1580,7 @@
                     addRecurringEntries(entryData, entryMonthIndex);
                 }
             }
-            
+
             saveMonthlyDataForCurrent(); // Salva os dados do mês atual (entryMonthName)
 
             // Limpa os campos e redefine o estado de edição
@@ -1279,13 +1589,13 @@
             dateInput.value = '';
             isRecurringInput.checked = false;
             document.querySelector('input[name="entryType"][value="expense"]').checked = true;
-            
+
             if (editingIndex !== null) {
                 document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
                 document.getElementById('cancelBtn').style.display = 'none';
                 editingIndex = null;
             }
-            
+
             // Recarrega os dados e atualiza a UI para o mês onde a entrada foi adicionada/editada
             // Se entryMonthName for diferente de currentMonth, precisamos mudar para ele
             if (currentMonth !== entryMonthName) {
@@ -1299,7 +1609,7 @@
         function saveMonthlyDataForCurrent() { // Função específica para salvar o mês corrente da entrada
             const user = auth.currentUser;
             const monthToSave = editingIndex !== null ? currentMonth : months[parseInt(document.getElementById('entryDate').value.split('-')[1], 10) - 1];
-            
+
             if (user && monthToSave && monthlyData[monthToSave]) {
                 const monthDataRef = ref(database, `users/${user.uid}/monthlyData/${monthToSave}`);
                 set(monthDataRef, monthlyData[monthToSave])
@@ -1320,7 +1630,7 @@
             document.getElementById('entryDate').value = entry.date;
             document.getElementById('isRecurring').checked = entry.isRecurring;
             document.querySelector(`input[name="entryType"][value="${entry.type}"]`).checked = true;
-            
+
             document.getElementById('addBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
             document.getElementById('cancelBtn').style.display = 'inline-block'; // ou 'flex'
             editingIndex = index;
@@ -1332,7 +1642,7 @@
             document.getElementById('entryDate').value = '';
             document.getElementById('isRecurring').checked = false;
             document.querySelector('input[name="entryType"][value="expense"]').checked = true;
-            
+
             document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
             document.getElementById('cancelBtn').style.display = 'none';
             editingIndex = null;
@@ -1362,7 +1672,7 @@
                     } else return; // Cancelou a exclusão específica
                 } else { // Excluir todas as futuras
                     confirmMessage = `Excluir TODAS as ocorrências futuras de "${entryToDelete.name}" a partir de ${currentMonth}?`;
-                     if (confirm(confirmMessage)) {
+                    if (confirm(confirmMessage)) {
                         removeRecurringEntries(entryToDelete.name, entryToDelete.amount, entryToDelete.type, entryToDelete.date, currentMonth);
                         // Como removeRecurringEntries já lida com a remoção do mês atual também,
                         // não precisamos fazer splice adicional aqui se ele já removeu.
@@ -1375,10 +1685,10 @@
                     } else return; // Cancelou a exclusão de todas
                 }
             } else { // Não é recorrente
-                 if (!confirm(confirmMessage)) return;
-                 entriesForCurrentMonth.splice(index, 1);
+                if (!confirm(confirmMessage)) return;
+                entriesForCurrentMonth.splice(index, 1);
             }
-            
+
             monthlyData[currentMonth].entries = entriesForCurrentMonth; // Atualiza o array no objeto global
             saveMonthlyData(); // Salva as alterações no Firebase
             loadMonthData(); // Recarrega e atualiza a UI
@@ -1408,13 +1718,13 @@
 
             entriesForCurrentMonth[index].isPaid = !entriesForCurrentMonth[index].isPaid;
             monthlyData[currentMonth].entries = entriesForCurrentMonth; // Atualiza o array no objeto global
-            
+
             saveMonthlyData(); // Salva no Firebase
             // Apenas atualiza a tabela e o "a pagar", não precisa recarregar tudo
-            updateTable(); 
+            updateTable();
             updateToPay();
         }
-        
+
         // --- Event Listeners Globais e Inicialização ---
         document.addEventListener('DOMContentLoaded', () => {
             const settingsMenuBtn = document.getElementById('settingsMenuBtn');
@@ -1436,7 +1746,7 @@
             if (appSignOutButton) {
                 appSignOutButton.addEventListener('click', signOutUser);
             }
-            
+
             if (settingsMenuBtn) settingsMenuBtn.addEventListener('click', toggleSettingsMenu);
             if (darkModeToggle) darkModeToggle.addEventListener('change', toggleTheme);
             if (paymentDayInput) paymentDayInput.addEventListener('change', setPaymentDay);
@@ -1488,4 +1798,5 @@
         });
     </script>
 </body>
+
 </html>
