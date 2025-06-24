@@ -161,6 +161,95 @@
             /* Ou um hover específico para Google */
         }
 
+        .login-container .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .login-container input[type="email"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            /* Essencial */
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .login-container .auth-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .login-container .auth-actions button {
+            flex-grow: 1;
+            background: var(--button-add-bg);
+            color: #fff;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .login-container .auth-actions button#registerBtn {
+            background: var(--button-secondary-bg, #6c757d);
+            /* Cor secundária */
+        }
+
+        .login-container .auth-actions button:hover {
+            opacity: 0.9;
+        }
+
+        .login-container .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #aaa;
+            margin: 25px 0;
+        }
+
+        .login-container .divider::before,
+        .login-container .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .login-container .divider:not(:empty)::before {
+            margin-right: .25em;
+        }
+
+        .login-container .divider:not(:empty)::after {
+            margin-left: .25em;
+        }
+
+        .login-container #googleSignInBtn {
+            background: #4285F4;
+            padding: 12px 20px;
+            width: 100%;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .login-container #googleSignInBtn:hover {
+            background: #357ae8;
+        }
+
         .header {
             display: flex;
             align-items: center;
@@ -835,9 +924,30 @@
 
 <body>
     <div id="loginScreen" class="login-container">
-        <h2>Login - Gastos v1</h2>
+        <h2>Acessar Gastos v1</h2>
+
+        <!-- Novos campos para E-mail e Senha -->
+        <div class="form-group">
+            <label for="emailInput">E-mail</label>
+            <input type="email" id="emailInput" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label for="passwordInput">Senha</label>
+            <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <!-- Novos botões de Ação -->
+        <div class="auth-actions">
+            <button id="loginBtn">Entrar</button>
+            <button id="registerBtn">Registrar</button>
+        </div>
+
+        <!-- Divisor visual -->
+        <div class="divider">ou</div>
+
+        <!-- Botão do Google que já existia -->
         <button id="googleSignInBtn">
-            <i class="fab fa-google"></i> Entrar com Google
+            <i class="fab fa-google"></i> Continuar com Google
         </button>
     </div>
 
@@ -945,7 +1055,15 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import {
+            getAuth,
+            GoogleAuthProvider,
+            signInWithPopup,
+            onAuthStateChanged,
+            signOut,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
         // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js"; // Analytics comentado
 
@@ -966,6 +1084,50 @@
         // const analytics = getAnalytics(app); // Analytics comentado
 
         // --- Funções de Autenticação Firebase ---
+        function handleRegistration() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (!email || password.length < 6) {
+                alert("Por favor, insira um e-mail válido e uma senha com pelo menos 6 caracteres.");
+                return;
+            }
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Usuário registrado com sucesso:", userCredential.user);
+                    // O onAuthStateChanged vai lidar com a atualização da UI, então não precisamos fazer nada aqui.
+                })
+                .catch((error) => {
+                    console.error("Erro no registro:", error.code, error.message);
+                    if (error.code === 'auth/email-already-in-use') {
+                        alert("Este e-mail já está em uso. Tente fazer login.");
+                    } else {
+                        alert("Erro ao registrar: " + error.message);
+                    }
+                });
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (!email || !password) {
+                alert("Por favor, insira e-mail e senha.");
+                return;
+            }
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Usuário logado com sucesso:", userCredential.user);
+                    // O onAuthStateChanged vai lidar com a atualização da UI.
+                })
+                .catch((error) => {
+                    console.error("Erro no login:", error.code, error.message);
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                        alert("E-mail ou senha incorretos.");
+                    } else {
+                        alert("Erro ao fazer login: " + error.message);
+                    }
+                });
+        }
+
         function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
             signInWithPopup(auth, provider)
@@ -1736,6 +1898,16 @@
             const addBtn = document.getElementById('addBtn');
             const cancelBtn = document.getElementById('cancelBtn');
             const entryTable = document.getElementById('entryTable'); // Escuta na tabela inteira
+
+            // NOVO: Adicione os listeners para os botões de login/registro
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', handleLogin);
+            }
+            const registerBtn = document.getElementById('registerBtn');
+            if (registerBtn) {
+                registerBtn.addEventListener('click', handleRegistration);
+            }
 
             // Botões de Login/Logout (já definidos fora do DOMContentLoaded, mas poderiam estar aqui)
             const googleLoginButton = document.getElementById('googleSignInBtn');
