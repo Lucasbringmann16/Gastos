@@ -1471,8 +1471,15 @@
             const totalExpenses = currentEntries
                 .filter(entry => entry.type === 'expense')
                 .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
-            document.getElementById('totalAmount').textContent = `Total de Gastos: ${formatCurrency(totalExpenses)}`;
-            return totalExpenses;
+
+            const totalAmountElement = document.getElementById('totalAmount');
+            if (isPrivacyMode) {
+                totalAmountElement.textContent = 'Total de Gastos: ****';
+            } else {
+                totalAmountElement.textContent = `Total de Gastos: ${formatCurrency(totalExpenses)}`;
+            }
+
+            return totalExpenses; // Retorna o valor para ser usado em outros cálculos
         }
 
         function updateRemaining() {
@@ -1504,8 +1511,13 @@
                 .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
 
             const toPayElement = document.getElementById('toPayAmount');
-            toPayElement.textContent = `A pagar: ${formatCurrency(totalToPay)}`;
-            toPayElement.classList.toggle('negative', totalToPay > 0);
+            if (isPrivacyMode) {
+                toPayElement.textContent = 'A pagar: ****';
+                toPayElement.classList.remove('negative');
+            } else {
+                toPayElement.textContent = `A pagar: ${formatCurrency(totalToPay)}`;
+                toPayElement.classList.toggle('negative', totalToPay > 0);
+            }
         }
 
         function updateChart() {
@@ -1871,6 +1883,7 @@
             updateSalaryDisplay();
             updateTable(); // Precisa re-renderizar a tabela para mostrar/ocultar valores
             updateRemaining();
+            updateToPay();
             updateChart();
         }
 
