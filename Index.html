@@ -1,0 +1,861 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyABRIh096KhMi_iQ55tA892tgBMR2Qj9Pw",
+    authDomain: "gastos-v1-f6461.firebaseapp.com",
+    projectId: "gastos-v1-f6461",
+    storageBucket: "gastos-v1-f6461.firebasestorage.app",
+    messagingSenderId: "306766635139",
+    appId: "1:306766635139:web:aaee04c71a9b166583fbb6",
+    measurementId: "G-Z1BVSQ5C80"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+function handleRegistration() {
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if (!email || password.length < 6) {
+        alert("Por favor, insira um e-mail válido e uma senha com pelo menos 6 caracteres.");
+        return;
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            console.log("Usuário registrado com sucesso:", userCredential.user);
+        })
+        .catch((error) => {
+            console.error("Erro no registro:", error.code, error.message);
+            if (error.code === 'auth/email-already-in-use') {
+                alert("Este e-mail já está em uso. Tente fazer login.");
+            } else {
+                alert("Erro ao registrar: " + error.message);
+            }
+        });
+}
+
+function handleLogin() {
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passwordInput').value;
+    if (!email || !password) {
+        alert("Por favor, insira e-mail e senha.");
+        return;
+    }
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            console.log("Usuário logado com sucesso:", userCredential.user);
+        })
+        .catch((error) => {
+            console.error("Erro no login:", error.code, error.message);
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                alert("E-mail ou senha incorretos.");
+            } else {
+                alert("Erro ao fazer login: " + error.message);
+            }
+        });
+}
+
+function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            const user = result.user;
+            console.log('Usuário logado:', user.displayName, user.email, user.uid);
+        })
+        .catch((error) => {
+            console.error('Erro ao fazer login com Google:', error.code, error.message);
+            if (error.code === 'auth/popup-closed-by-user') {
+                alert('A janela de login foi fechada antes da conclusão.');
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                console.warn('Múltiplas janelas de login solicitadas ou uma cancelada.');
+            } else {
+                alert('Erro ao fazer login: ' + error.message);
+            }
+        });
+}
+
+function signOutUser() {
+    signOut(auth).then(() => {
+        console.log('Usuário deslogado com sucesso.');
+        entries = [];
+        salary = 0;
+        monthlyData = {};
+        const tableBody = document.getElementById('entryTableBody');
+        if (tableBody) tableBody.innerHTML = '';
+        document.getElementById('totalAmount').textContent = 'Total de Gastos: R$ 0,00';
+        document.getElementById('remainingAmount').textContent = 'Restante: R$ 0,00';
+        document.getElementById('toPayAmount').textContent = 'A pagar: R$ 0,00';
+        if (chart) chart.destroy();
+    }).catch((error) => {
+        console.error('Erro ao fazer logout:', error.message);
+        alert('Erro ao fazer logout: ' + error.message);
+    });
+}
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('onAuthStateChanged: Usuário logado', user.uid);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        setupAppUI();
+    } else {
+        console.log('onAuthStateChanged: Usuário deslogado');
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('mainApp').style.display = 'none';
+        const menu = document.getElementById('settingsMenu');
+        if (menu && menu.classList.contains('active')) {
+            menu.classList.remove('active');
+        }
+    }
+});
+
+const months = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
+let monthlyData = {};
+let currentMonth = getCurrentMonthFromServerOrLocal();
+let entries = [];
+let salary = 0;
+let chart;
+let editingIndex = null;
+let isPrivacyMode = localStorage.getItem('app2_privacyMode') === 'true' || false;
+
+function setupAppUI() {
+    loadTheme();
+    loadPaymentDay();
+    const privacyIcon = document.getElementById('privacyToggle').querySelector('i');
+    privacyIcon.classList.toggle('fa-eye', !isPrivacyMode);
+    privacyIcon.classList.toggle('fa-eye-slash', isPrivacyMode);
+    populateMonthSelect(); // Novo: popula o select dinamicamente
+    setDefaultMonth();
+    loadMonthData();
+}
+
+function getCurrentMonthFromServerOrLocal() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    let currentMonthIndex = today.getMonth(); // 0-11
+    let currentYear = today.getFullYear();
+    const paymentDay = parseInt(localStorage.getItem('app2_paymentDay')) || 1;
+
+    if (currentDay > paymentDay) {
+        currentMonthIndex += 1;
+        if (currentMonthIndex > 11) {
+            currentMonthIndex = 0;
+            currentYear += 1;
+        }
+    }
+    return `${months[currentMonthIndex]} ${currentYear}`;
+}
+
+function populateMonthSelect() {
+    const monthSelect = document.getElementById('monthSelect');
+    monthSelect.innerHTML = ''; // Limpa opções antigas
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear - 1; year <= currentYear + 1; year++) { // De ano passado ao próximo
+        months.forEach((month) => {
+            const option = document.createElement('option');
+            option.value = `${month} ${year}`;
+            option.textContent = `${month} ${year}`;
+            monthSelect.appendChild(option);
+        });
+    }
+}
+
+function initializeMonthlyData() {
+    const currentYear = new Date().getFullYear();
+    let dataChanged = false;
+    for (let year = currentYear - 1; year <= currentYear + 1; year++) {
+        months.forEach(month => {
+            const monthKey = `${month} ${year}`;
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { entries: [], salary: 0 };
+                dataChanged = true;
+            } else if (!monthlyData[monthKey].entries) {
+                monthlyData[monthKey].entries = [];
+                dataChanged = true;
+            } else if (monthlyData[monthKey].expenses) { // Migração antiga
+                monthlyData[monthKey].entries = monthlyData[monthKey].expenses.map(expense => ({
+                    ...expense,
+                    type: 'expense',
+                    isPaid: false
+                }));
+                delete monthlyData[monthKey].expenses;
+                dataChanged = true;
+            }
+            if (typeof monthlyData[monthKey].salary === 'undefined') {
+                monthlyData[monthKey].salary = 0;
+                dataChanged = true;
+            }
+        });
+    }
+}
+
+function saveMonthlyData() {
+    const user = auth.currentUser;
+    if (user && currentMonth) {
+        const monthDataRef = ref(database, `users/${user.uid}/monthlyData/${currentMonth.replace(/\s/g, '_')}`); // Substitui espaço por _ para Firebase
+        const dataToSave = {
+            entries: monthlyData[currentMonth]?.entries || [],
+            salary: monthlyData[currentMonth]?.salary || 0
+        };
+        set(monthDataRef, dataToSave)
+            .then(() => {
+                console.log(`Dados para ${currentMonth} salvos no Firebase.`);
+            })
+            .catch((error) => {
+                console.error(`Erro ao salvar dados de ${currentMonth} no Firebase:`, error);
+            });
+    } else if (!user) {
+        console.log("Nenhum usuário logado, dados não salvos no Firebase.");
+    }
+}
+
+function loadMonthData() {
+    const user = auth.currentUser;
+    const selectedMonth = document.getElementById('monthSelect').value;
+    currentMonth = selectedMonth;
+
+    if (user) {
+        const userMonthlyDataRef = ref(database, `users/${user.uid}/monthlyData`);
+        onValue(userMonthlyDataRef, (snapshot) => {
+            const allDataFromFirebase = snapshot.val() || {};
+            // Migração: Se chave antiga sem ano, adiciona ano atual
+            Object.keys(allDataFromFirebase).forEach(key => {
+                if (!key.includes(' ')) { // Chave antiga sem ano
+                    const newKey = `${key} ${new Date().getFullYear()}`;
+                    allDataFromFirebase[newKey] = allDataFromFirebase[key];
+                    delete allDataFromFirebase[key];
+                } else {
+                    // Normaliza chaves com _ para espaço
+                    if (key.includes('_')) {
+                        const normalizedKey = key.replace(/_/g, ' ');
+                        allDataFromFirebase[normalizedKey] = allDataFromFirebase[key];
+                        delete allDataFromFirebase[key];
+                    }
+                }
+            });
+            monthlyData = allDataFromFirebase;
+            initializeMonthlyData();
+            entries = monthlyData[currentMonth]?.entries || [];
+            salary = monthlyData[currentMonth]?.salary || 0;
+            console.log(`Dados carregados para ${currentMonth} do Firebase:`, monthlyData[currentMonth]);
+            updateUIComponents();
+        }, { onlyOnce: true });
+    } else {
+        console.log("Nenhum usuário logado, carregando dados de fallback ou estado vazio.");
+        initializeMonthlyData();
+        entries = monthlyData[currentMonth]?.entries || [];
+        salary = monthlyData[currentMonth]?.salary || 0;
+        updateUIComponents();
+    }
+}
+
+function updateUIComponents() {
+    updateTable();
+    updateSalaryDisplay();
+    updateRemaining();
+    updateChart();
+    updateToPay();
+}
+
+function setDefaultMonth() {
+    const monthSelect = document.getElementById('monthSelect');
+    monthSelect.value = currentMonth;
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('Service Worker registrado com sucesso:', registration);
+            })
+            .catch(error => {
+                console.error('Erro ao registrar o Service Worker:', error);
+            });
+    });
+}
+
+function toggleSettingsMenu() {
+    const menu = document.getElementById('settingsMenu');
+    if (menu) {
+        menu.classList.toggle('active');
+    }
+}
+
+function toggleTheme() {
+    const body = document.body;
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    body.setAttribute('data-theme', newTheme);
+    document.getElementById('darkModeToggle').checked = (newTheme === 'dark');
+    localStorage.setItem('app2_theme', newTheme);
+    updateChart();
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('app2_theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) darkModeToggle.checked = savedTheme === 'dark';
+}
+
+function setPaymentDay() {
+    const paymentDayInput = document.getElementById('paymentDay');
+    let paymentDay = parseInt(paymentDayInput.value);
+    if (isNaN(paymentDay) || paymentDay < 1 || paymentDay > 31) {
+        paymentDay = 1;
+        paymentDayInput.value = paymentDay;
+    }
+    localStorage.setItem('app2_paymentDay', paymentDay.toString());
+    currentMonth = getCurrentMonthFromServerOrLocal(); // Recalcula mês atual
+    setDefaultMonth();
+    loadMonthData();
+}
+
+function loadPaymentDay() {
+    const paymentDay = localStorage.getItem('app2_paymentDay') || "1";
+    const paymentDayInput = document.getElementById('paymentDay');
+    if (paymentDayInput) paymentDayInput.value = paymentDay;
+}
+
+function formatCurrency(value) {
+    return `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
+}
+
+function formatDate(dateString) {
+    if (!dateString || typeof dateString !== 'string' || !dateString.includes('-')) {
+        return 'Data inválida';
+    }
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return 'Data inválida';
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+}
+
+function setSalary() {
+    const salaryInput = document.getElementById('salaryAmount');
+    const salaryValue = parseFloat(salaryInput.value);
+
+    if (!isNaN(salaryValue) && salaryValue >= 0) {
+        if (!monthlyData[currentMonth]) {
+            monthlyData[currentMonth] = { entries: [], salary: 0 };
+        }
+        monthlyData[currentMonth].salary = salaryValue;
+        salary = salaryValue;
+        saveMonthlyData();
+        salaryInput.value = '';
+        updateSalaryDisplay();
+        updateRemaining();
+    } else {
+        alert('Por favor, insira um valor de salário válido (positivo ou zero).');
+    }
+}
+
+function updateSalaryDisplay() {
+    const salaryElement = document.getElementById('currentSalary');
+    if (salaryElement) {
+        salaryElement.textContent = salary > 0 && !isPrivacyMode ? formatCurrency(salary) : '';
+    }
+}
+
+function updateTable() {
+    const tableBody = document.getElementById('entryTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    const currentEntries = monthlyData[currentMonth]?.entries || [];
+
+    currentEntries.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        const valueColor = entry.type === 'income' ? 'var(--remaining-color)' : 'var(--remaining-negative-color)';
+        const displayValue = isPrivacyMode ? '****' : formatCurrency(entry.amount);
+        const paidIcon = entry.isPaid ? '<i class="fas fa-check paid-icon"></i>' : '';
+
+        row.innerHTML = `
+            <td style="cursor: pointer;" data-action="toggle-paid" data-index="${index}">${paidIcon} ${entry.name}${entry.isRecurring ? ' <i class="fas fa-redo-alt recurring-icon"></i>' : ''}</td>
+            <td style="color: ${valueColor}">${displayValue}</td>
+            <td>${formatDate(entry.date)}</td>
+            <td>
+                <button class="edit-btn" data-index="${index}"><i class="fas fa-edit"></i> Editar</button>
+                <button class="delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Excluir</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function updateTotal() {
+    const currentEntries = monthlyData[currentMonth]?.entries || [];
+    const totalExpenses = currentEntries
+        .filter(entry => entry.type === 'expense')
+        .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
+
+    const totalAmountElement = document.getElementById('totalAmount');
+    if (isPrivacyMode) {
+        totalAmountElement.textContent = 'Total de Gastos: ****';
+    } else {
+        totalAmountElement.textContent = `Total de Gastos: ${formatCurrency(totalExpenses)}`;
+    }
+
+    return totalExpenses;
+}
+
+function updateRemaining() {
+    const totalExpenses = updateTotal();
+    const currentEntries = monthlyData[currentMonth]?.entries || [];
+    const currentSalary = monthlyData[currentMonth]?.salary || 0;
+
+    const totalIncome = currentEntries
+        .filter(entry => entry.type === 'income')
+        .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
+
+    const totalBudget = currentSalary + totalIncome;
+    const remaining = totalBudget - totalExpenses;
+
+    const remainingElement = document.getElementById('remainingAmount');
+    if (isPrivacyMode) {
+        remainingElement.textContent = 'Restante: ****';
+        remainingElement.classList.remove('negative');
+    } else {
+        remainingElement.textContent = `Restante: ${formatCurrency(remaining)}`;
+        remainingElement.classList.toggle('negative', remaining < 0);
+    }
+}
+
+function updateToPay() {
+    const currentEntries = monthlyData[currentMonth]?.entries || [];
+    const totalToPay = currentEntries
+        .filter(entry => entry.type === 'expense' && !entry.isPaid)
+        .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
+
+    const toPayElement = document.getElementById('toPayAmount');
+    if (isPrivacyMode) {
+        toPayElement.textContent = 'A pagar: ****';
+        toPayElement.classList.remove('negative');
+    } else {
+        toPayElement.textContent = `A pagar: ${formatCurrency(totalToPay)}`;
+        toPayElement.classList.toggle('negative', totalToPay > 0);
+    }
+}
+
+function updateChart() {
+    const chartContainer = document.getElementById('entryChart');
+    if (!chartContainer) return;
+    const ctx = chartContainer.getContext('2d');
+    const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+
+    if (isPrivacyMode) {
+        if (chart) chart.destroy();
+        ctx.canvas.style.display = 'none';
+        return;
+    }
+    ctx.canvas.style.display = 'block';
+
+    const currentEntries = monthlyData[currentMonth]?.entries || [];
+    const currentSalaryValue = monthlyData[currentMonth]?.salary || 0;
+
+    const totalExpenses = currentEntries
+        .filter(entry => entry.type === 'expense')
+        .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
+    const totalIncome = currentEntries
+        .filter(entry => entry.type === 'income')
+        .reduce((sum, entry) => sum + parseFloat(entry.amount || 0), 0);
+
+    const totalBudget = currentSalaryValue + totalIncome;
+    const remainingForChart = totalBudget > 0 ? Math.max(totalBudget - totalExpenses, 0) : 0;
+
+    const expenseLabels = currentEntries.filter(entry => entry.type === 'expense').map(entry => entry.name);
+    const expenseData = currentEntries.filter(entry => entry.type === 'expense').map(entry => parseFloat(entry.amount || 0));
+
+    const labels = [...expenseLabels];
+    const data = [...expenseData];
+    const hasRemainingOrIncome = (remainingForChart > 0 && totalBudget > 0);
+
+    if (hasRemainingOrIncome) {
+        labels.push('Disponível (Salário + Rendas - Gastos)');
+        data.push(remainingForChart);
+    } else if (totalBudget <= 0 && totalExpenses === 0) {
+        if (chart) chart.destroy();
+        return;
+    }
+
+    const expenseColors = isDarkTheme
+        ? ['#4CAF50', '#29B6F6', '#F44336', '#78909C', '#FFB300', '#CE93D8']
+        : ['#66BB6A', '#42A5F5', '#EF5350', '#90A4AE', '#FFCA28', '#AB47BC'];
+    const remainingBaseColor = isDarkTheme ? 'rgba(128, 128, 128, 0.7)' : 'rgba(211, 211, 211, 0.7)';
+
+    const backgroundColors = expenseData.map((_, index) => expenseColors[index % expenseColors.length]);
+    if (hasRemainingOrIncome) {
+        backgroundColors.push(remainingBaseColor);
+    }
+
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColors,
+                borderColor: isDarkTheme ? '#1e1e1e' : '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { color: isDarkTheme ? '#e0e0e0' : '#2d3436', font: { family: 'Poppins', size: 12 } }
+                },
+                tooltip: {
+                    callbacks: { label: (context) => `${context.label}: ${formatCurrency(context.raw)}` }
+                }
+            }
+        }
+    });
+}
+
+function getMonthIndex(monthName) {
+    return months.indexOf(monthName);
+}
+
+function getLastDayOfMonth(year, monthIndex) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function addRecurringEntries(entryData, startMonthIndexParam, startYearParam) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const [yearStr, monthStr, dayStr] = entryData.date.split('-');
+    let parsedYear = parseInt(yearStr);
+    const parsedDay = parseInt(dayStr);
+    const originalEntryMonthIndex = parseInt(monthStr) - 1;
+    let actualStartMonthIndexForLoop = editingIndex !== null ? originalEntryMonthIndex : startMonthIndexParam;
+    let currentYearForLoop = editingIndex !== null ? parsedYear : startYearParam;
+
+    // Loop por meses e anos (até o final do próximo ano, para limitar)
+    const endYear = new Date().getFullYear() + 1;
+    while (currentYearForLoop <= endYear) {
+        for (let i = actualStartMonthIndexForLoop; i < months.length; i++) {
+            const targetMonthName = months[i];
+            const lastDay = getLastDayOfMonth(currentYearForLoop, i);
+            const targetDay = Math.min(parsedDay, lastDay);
+            const targetDate = `${currentYearForLoop}-${String(i + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+
+            const newRecurringEntry = {
+                ...entryData,
+                date: targetDate,
+                isRecurring: true,
+                isPaid: false
+            };
+
+            const targetMonthKey = `${targetMonthName} ${currentYearForLoop}`;
+            if (!monthlyData[targetMonthKey]) {
+                monthlyData[targetMonthKey] = { entries: [], salary: 0 };
+            }
+
+            if (i === originalEntryMonthIndex && editingIndex !== null && targetMonthKey === currentMonth) {
+                monthlyData[targetMonthKey].entries[editingIndex] = newRecurringEntry;
+            } else {
+                const existingEntryIndex = monthlyData[targetMonthKey].entries.findIndex(e =>
+                    e.name === newRecurringEntry.name &&
+                    e.amount === newRecurringEntry.amount &&
+                    e.type === newRecurringEntry.type &&
+                    e.date.substring(0, 7) === newRecurringEntry.date.substring(0, 7)
+                );
+
+                if (existingEntryIndex === -1) {
+                    monthlyData[targetMonthKey].entries.push(newRecurringEntry);
+                } else {
+                    monthlyData[targetMonthKey].entries[existingEntryIndex] = newRecurringEntry;
+                }
+            }
+            const monthDataRef = ref(database, `users/${user.uid}/monthlyData/${targetMonthKey.replace(/\s/g, '_')}`);
+            set(monthDataRef, monthlyData[targetMonthKey]);
+        }
+        // Reseta para janeiro do próximo ano
+        actualStartMonthIndexForLoop = 0;
+        currentYearForLoop += 1;
+    }
+}
+
+function removeRecurringEntries(entryName, entryAmount, entryType, originalDateStr, fromMonthKey) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const [originalYearStr] = originalDateStr.split('-');
+    const originalYear = parseInt(originalYearStr);
+    const [fromMonthName, fromYearStr] = fromMonthKey.split(' ');
+    const startRemovingMonthIndex = getMonthIndex(fromMonthName);
+    let currentYear = parseInt(fromYearStr);
+
+    const endYear = new Date().getFullYear() + 1;
+    while (currentYear <= endYear) {
+        for (let i = (currentYear === parseInt(fromYearStr) ? startRemovingMonthIndex : 0); i < months.length; i++) {
+            const targetMonthName = months[i];
+            const targetMonthKey = `${targetMonthName} ${currentYear}`;
+            if (monthlyData[targetMonthKey] && monthlyData[targetMonthKey].entries) {
+                monthlyData[targetMonthKey].entries = monthlyData[targetMonthKey].entries.filter(e => {
+                    const [entryYear] = e.date.split('-');
+                    if (!e.isRecurring || e.name !== entryName || e.amount !== entryAmount || e.type !== entryType || entryYear !== originalYearStr) {
+                        return true;
+                    }
+                    return false;
+                });
+                const monthDataRef = ref(database, `users/${user.uid}/monthlyData/${targetMonthKey.replace(/\s/g, '_')}`);
+                set(monthDataRef, monthlyData[targetMonthKey]);
+            }
+        }
+        currentYear += 1;
+    }
+}
+
+function toggleRecurringOption() {
+    const recurringOption = document.getElementById('recurringOption');
+    if (recurringOption) recurringOption.style.display = 'block';
+}
+
+function addOrUpdateEntry() {
+    const nameInput = document.getElementById('entryName');
+    const amountInput = document.getElementById('entryAmount');
+    const dateInput = document.getElementById('entryDate');
+    const type = document.querySelector('input[name="entryType"]:checked').value;
+    const isRecurringInput = document.getElementById('isRecurring');
+
+    const name = nameInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    const dateStr = dateInput.value;
+    const isRecurring = isRecurringInput.checked;
+
+    if (!name || isNaN(amount) || amount <= 0 || !dateStr) {
+        alert('Por favor, preencha todos os campos corretamente: nome, valor positivo e data.');
+        return;
+    }
+
+    const [yearStr, monthNumStr, day] = dateStr.split('-');
+    const entryMonthIndex = parseInt(monthNumStr, 10) - 1;
+    const entryYear = parseInt(yearStr);
+    const entryMonthName = months[entryMonthIndex];
+    const entryMonthKey = `${entryMonthName} ${entryYear}`;
+
+    const entryData = { name, amount, date: dateStr, type, isRecurring, isPaid: false };
+
+    if (!monthlyData[entryMonthKey]) {
+        monthlyData[entryMonthKey] = { entries: [], salary: 0 };
+    }
+
+    if (editingIndex !== null) {
+        const oldEntry = monthlyData[currentMonth].entries[editingIndex];
+        if (oldEntry.isRecurring && !isRecurring) {
+            removeRecurringEntries(oldEntry.name, oldEntry.amount, oldEntry.type, oldEntry.date, currentMonth);
+        }
+        monthlyData[currentMonth].entries[editingIndex] = entryData;
+        if (isRecurring) {
+            addRecurringEntries(entryData, entryMonthIndex, entryYear);
+        }
+    } else {
+        monthlyData[entryMonthKey].entries.push(entryData);
+        if (isRecurring) {
+            addRecurringEntries(entryData, entryMonthIndex, entryYear);
+        }
+    }
+
+    saveMonthlyData(); // Salva o mês atual, mas como pode afetar múltiplos, a add/remove já salva
+
+    nameInput.value = '';
+    amountInput.value = '';
+    dateInput.value = '';
+    isRecurringInput.checked = false;
+    document.querySelector('input[name="entryType"][value="expense"]').checked = true;
+
+    if (editingIndex !== null) {
+        document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+        document.getElementById('cancelBtn').style.display = 'none';
+        editingIndex = null;
+    }
+
+    if (currentMonth !== entryMonthKey) {
+        document.getElementById('monthSelect').value = entryMonthKey;
+        changeMonth();
+    } else {
+        loadMonthData();
+    }
+}
+
+function editEntry(index) {
+    const entriesForCurrentMonth = monthlyData[currentMonth]?.entries || [];
+    if (index < 0 || index >= entriesForCurrentMonth.length) return;
+
+    const entry = entriesForCurrentMonth[index];
+    document.getElementById('entryName').value = entry.name;
+    document.getElementById('entryAmount').value = entry.amount.toFixed(2);
+    document.getElementById('entryDate').value = entry.date;
+    document.getElementById('isRecurring').checked = entry.isRecurring;
+    document.querySelector(`input[name="entryType"][value="${entry.type}"]`).checked = true;
+
+    document.getElementById('addBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+    document.getElementById('cancelBtn').style.display = 'inline-block';
+    editingIndex = index;
+}
+
+function cancelEdit() {
+    document.getElementById('entryName').value = '';
+    document.getElementById('entryAmount').value = '';
+    document.getElementById('entryDate').value = '';
+    document.getElementById('isRecurring').checked = false;
+    document.querySelector('input[name="entryType"][value="expense"]').checked = true;
+
+    document.getElementById('addBtn').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+    document.getElementById('cancelBtn').style.display = 'none';
+    editingIndex = null;
+}
+
+function deleteEntry(index) {
+    const entriesForCurrentMonth = monthlyData[currentMonth]?.entries || [];
+    if (index < 0 || index >= entriesForCurrentMonth.length) return;
+
+    const entryToDelete = { ...entriesForCurrentMonth[index] };
+    let confirmMessage = `Tem certeza que deseja excluir "${entryToDelete.name}"?`;
+
+    if (entryToDelete.isRecurring) {
+        const choice = confirm(
+            `"${entryToDelete.name}" é uma entrada recorrente.\n` +
+            `OK: Excluir APENAS a ocorrência de ${currentMonth}.\n` +
+            `Cancelar: Excluir TODAS as ocorrências futuras (a partir de ${currentMonth}).`
+        );
+
+        if (choice) {
+            confirmMessage = `Excluir "${entryToDelete.name}" apenas de ${currentMonth}?`;
+            if (confirm(confirmMessage)) {
+                entriesForCurrentMonth.splice(index, 1);
+            } else return;
+        } else {
+            confirmMessage = `Excluir TODAS as ocorrências futuras de "${entryToDelete.name}" a partir de ${currentMonth}?`;
+            if (confirm(confirmMessage)) {
+                removeRecurringEntries(entryToDelete.name, entryToDelete.amount, entryToDelete.type, entryToDelete.date, currentMonth);
+                loadMonthData();
+                return;
+            } else return;
+        }
+    } else {
+        if (!confirm(confirmMessage)) return;
+        entriesForCurrentMonth.splice(index, 1);
+    }
+
+    monthlyData[currentMonth].entries = entriesForCurrentMonth;
+    saveMonthlyData();
+    loadMonthData();
+}
+
+function changeMonth() {
+    currentMonth = document.getElementById('monthSelect').value;
+    loadMonthData();
+}
+
+function togglePrivacyMode() {
+    isPrivacyMode = !isPrivacyMode;
+    localStorage.setItem('app2_privacyMode', isPrivacyMode.toString());
+    const icon = document.getElementById('privacyToggle').querySelector('i');
+    icon.classList.toggle('fa-eye', !isPrivacyMode);
+    icon.classList.toggle('fa-eye-slash', isPrivacyMode);
+    updateSalaryDisplay();
+    updateTable();
+    updateRemaining();
+    updateToPay();
+    updateChart();
+}
+
+function togglePaid(index) {
+    const entriesForCurrentMonth = monthlyData[currentMonth]?.entries || [];
+    if (index < 0 || index >= entriesForCurrentMonth.length) return;
+
+    entriesForCurrentMonth[index].isPaid = !entriesForCurrentMonth[index].isPaid;
+    monthlyData[currentMonth].entries = entriesForCurrentMonth;
+    saveMonthlyData();
+    updateTable();
+    updateToPay();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const settingsMenuBtn = document.getElementById('settingsMenuBtn');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const paymentDayInput = document.getElementById('paymentDay');
+    const setSalaryBtn = document.getElementById('setSalaryBtn');
+    const monthSelect = document.getElementById('monthSelect');
+    const privacyToggleBtn = document.getElementById('privacyToggle');
+    const addBtn = document.getElementById('addBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const entryTable = document.getElementById('entryTable');
+
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+    const registerBtn = document.getElementById('registerBtn');
+    if (registerBtn) registerBtn.addEventListener('click', handleRegistration);
+
+    const googleLoginButton = document.getElementById('googleSignInBtn');
+    if (googleLoginButton) googleLoginButton.addEventListener('click', signInWithGoogle);
+    const appSignOutButton = document.getElementById('signOutBtn');
+    if (appSignOutButton) appSignOutButton.addEventListener('click', signOutUser);
+
+    if (settingsMenuBtn) settingsMenuBtn.addEventListener('click', toggleSettingsMenu);
+    if (darkModeToggle) darkModeToggle.addEventListener('change', toggleTheme);
+    if (paymentDayInput) paymentDayInput.addEventListener('change', setPaymentDay);
+    if (setSalaryBtn) setSalaryBtn.addEventListener('click', setSalary);
+    if (monthSelect) monthSelect.addEventListener('change', changeMonth);
+    if (privacyToggleBtn) privacyToggleBtn.addEventListener('click', togglePrivacyMode);
+    if (addBtn) addBtn.addEventListener('click', addOrUpdateEntry);
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+
+    if (entryTable) {
+        entryTable.addEventListener('click', (event) => {
+            const target = event.target;
+            const actionButton = target.closest('button[data-index]');
+            const actionCell = target.closest('td[data-action="toggle-paid"]');
+
+            if (actionButton) {
+                const index = parseInt(actionButton.getAttribute('data-index'));
+                if (!isNaN(index)) {
+                    if (actionButton.classList.contains('edit-btn')) {
+                        editEntry(index);
+                    } else if (actionButton.classList.contains('delete-btn')) {
+                        deleteEntry(index);
+                    }
+                }
+            } else if (actionCell) {
+                const index = parseInt(actionCell.getAttribute('data-index'));
+                if (!isNaN(index)) {
+                    togglePaid(index);
+                }
+            }
+        });
+    }
+
+    document.addEventListener('click', (event) => {
+        const menu = document.getElementById('settingsMenu');
+        const menuButton = document.getElementById('settingsMenuBtn');
+        if (menuButton && menu && !menu.contains(event.target) && !menuButton.contains(event.target) && !menuButton.querySelector('i').contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
+    document.querySelectorAll('input[name="entryType"]').forEach(radio => {
+        radio.addEventListener('change', toggleRecurringOption);
+    });
+});
